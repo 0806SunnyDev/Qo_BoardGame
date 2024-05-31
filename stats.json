@@ -1,1 +1,24 @@
-{}
+{
+    "player": {
+      "discPlayedOnCorner": {
+        "id": 10,
+        "name": "Discs played on a corner",
+        "type": "int"
+      },
+      "discPlayedOnBorder": {
+        "id": 11,
+        "name": "Discs played on a border",
+        "type": "int"
+      },
+      "discPlayedOnCenter": {
+        "id": 12,
+        "name": "Discs played on board center part",
+        "type": "int"
+      },
+      "turnedOver": {
+        "id": 13,
+        "name": "Number of discs turned over",
+        "type": "int"
+      }
+    }
+  }

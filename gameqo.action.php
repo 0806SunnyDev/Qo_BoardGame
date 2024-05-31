@@ -39,29 +39,14 @@
       }
   	} 
   	
-  	// TODO: defines your action entry points there
-
-
-    /*
-    
-    Example:
-  	
-    public function myAction()
-    {
-        $this->setAjaxMode();     
-
-        // Retrieve arguments
-        // Note: these arguments correspond to what has been sent through the javascript "ajaxcall" method
-        $arg1 = $this->getArg( "myArgument1", AT_posint, true );
-        $arg2 = $this->getArg( "myArgument2", AT_posint, true );
-
-        // Then, call the appropriate method in your game logic, like "playCard" or "myAction"
-        $this->game->myAction( $arg1, $arg2 );
-
-        $this->ajaxResponse( );
-    }
-    
-    */
+  	public function playDisc()
+{
+    $this->setAjaxMode();
+    $x = (int)$this->getArg( "x", AT_posint, true );
+    $y = (int)$this->getArg( "y", AT_posint, true );
+    $result = $this->game->playDisc( $x, $y );
+    $this->ajaxResponse( );
+}
 
   }
   

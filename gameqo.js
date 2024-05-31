@@ -81,6 +81,8 @@ function (dojo, declare) {
                     this.addDiscOnBoard( square.x, square.y, square.player );
                 }
             }
+
+            document.querySelectorAll('.square').forEach(square => square.addEventListener('click', e => this.onPlayDisc(e)));
             
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -103,36 +105,6 @@ function (dojo, declare) {
             {
             case 'playerTurn':
                 this.updatePossibleMoves( args.args.possibleMoves );
-                break;
-            }
-        },
-       
-
-        ///////////////////////////////////////////////////
-        //// Game & client states
-        
-        // onEnteringState: this method is called each time we are entering into a new game state.
-        //                  You can use this method to perform some user interface changes at this moment.
-        //
-        onEnteringState: function( stateName, args )
-        {
-            console.log( 'Entering state: '+stateName );
-            
-            switch( stateName )
-            {
-            
-            /* Example:
-            
-            case 'myGameState':
-            
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-                
-                break;
-           */
-           
-           
-            case 'dummmy':
                 break;
             }
         },
@@ -215,6 +187,32 @@ function (dojo, declare) {
             }
                         
             this.addTooltipToClass( 'possibleMove', '', _('Place a disc here') );
+        },
+
+        onPlayDisc: function( evt )
+        {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // Get the cliqued square x and y
+            // Note: square id format is "square_X_Y"
+            var coords = evt.currentTarget.id.split('_');
+            var x = coords[1];
+            var y = coords[2];
+
+            if(!document.getElementById(`square_${x}_${y}`).classList.contains('possibleMove')) {
+                // This is not a possible move => the click does nothing
+                return ;
+            }
+            
+            if( this.checkAction( 'playDisc' ) )    // Check that this action is possible at this moment
+            {            
+                this.ajaxcall( "/gameqo/gameqo/playDisc.html", {
+                    x:x,
+                    y:y
+                }, this, function( result ) {} );
+            }
         },
 
         ///////////////////////////////////////////////////
