@@ -290,35 +290,60 @@ function (dojo, declare) {
         setupNotifications: function()
         {
             console.log( 'notifications subscriptions setup' );
-            
-            // TODO: here, associate your game notifications with local methods
-            
-            // Example 1: standard notification handling
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-            
-            // Example 2: standard notification handling + tell the user interface to wait
-            //            during 3 seconds after calling the method in order to let the players
-            //            see what is happening in the game.
-            // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-            // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
-            // 
-        },  
+
+            const notifs = [
+                ['playDisc', 500],
+                ['turnOverDiscs', 1500],
+                ['newScores', 1],
+            ];
+    
+            notifs.forEach((notif) => {
+                dojo.subscribe(notif[0], this, `notif_${notif[0]}`);
+                this.notifqueue.setSynchronous(notif[0], notif[1]);
+            });
+        },
         
-        // TODO: from this point and below, you can write your game notifications handling methods
-        
-        /*
-        Example:
-        
-        notif_cardPlayed: function( notif )
+        notif_playDisc: function( notif )
         {
-            console.log( 'notif_cardPlayed' );
-            console.log( notif );
-            
-            // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-            
-            // TODO: play the card in the user interface.
-        },    
+            // Remove current possible moves (makes the board more clear)
+            document.querySelectorAll('.possibleMove').forEach(div => div.classList.remove('possibleMove'));
         
-        */
+            this.addDiscOnBoard( notif.args.x, notif.args.y, notif.args.player_id );
+        },
+        
+        notif_turnOverDiscs: function( notif )
+        {
+            // Get the color of the player who is returning the discs
+            var targetColor = this.gamedatas.players[ notif.args.player_id ].color;
+
+            // Made these discs blinking and set them to the specified color
+            for( var i in notif.args.turnedOver )
+            {
+                var disc = notif.args.turnedOver[ i ];
+                
+                // Make the disc blink 2 times
+                var anim = dojo.fx.chain( [
+                    dojo.fadeOut( { node: 'disc_'+disc.x+''+disc.y } ),
+                    dojo.fadeIn( { node: 'disc_'+disc.x+''+disc.y } ),
+                    dojo.fadeOut( { 
+                                    node: 'disc_'+disc.x+''+disc.y,
+                                    onEnd: node => $(node).dataset.color = targetColor,
+                                } ),
+                    dojo.fadeIn( { node: 'disc_'+disc.x+''+disc.y  } )
+                                
+                ] ); // end of dojo.fx.chain
+
+                // ... and launch the animation
+                anim.play();                
+            }
+        },
+        notif_newScores: function( notif )
+        {
+            for( var player_id in notif.args.scores )
+            {
+                var newScore = notif.args.scores[ player_id ];
+                this.scoreCtrl[ player_id ].toValue( newScore );
+            }
+        }
    });             
 });

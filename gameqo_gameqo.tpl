@@ -30,5 +30,10 @@
     <div id="discs">
     </div>
 </div>
+<div id="buttons">
+    <button class="game-button" id="singlebutton">1 Player</button>
+    <button class="game-button" id="multibutton">2 Players</button>
+    <button class="game-button" id="demobutton">Demo</button>
+</div>
 
 {OVERALL_GAME_FOOTER}
