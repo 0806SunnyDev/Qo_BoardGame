@@ -45,8 +45,8 @@
         <div class="name-black" id="player-name-1">Player-1</div>
         <div class="tile-container">
             <div class="score-tile score-black">
-                <div class="score" id="black-score">Stone: 79</div>
-                <div class="score" id="black-score">Captured: 3</div>
+                <div class="score" id="black-score">Lodestone: <span id="lodestone-1"><span></div>
+                <div class="score" id="black-score">Captured: <span id="score-1"><span></div>
             </div>
         </div>
     </div>
@@ -54,8 +54,8 @@
         <div class="name-white" id="player-name-2">Player-2</div>
         <div class="tile-container">
             <div class="score-tile score-white">
-                <div class="score" id="white-score">Stone: 81</div>
-                <div class="score" id="white-score">Captured: 5</div>
+                <div class="score" id="white-score">Lodestone: <span id="lodestone-2"><span></div>
+                <div class="score" id="white-score">Captured: <span id="score-2"><span></div>
             </div>
         </div>
     </div>

@@ -67,25 +67,16 @@
     }
 */
 
-#header {
-    font-family: 'Archivo Black', sans-serif;
-    font-size: 77px;
-    margin-bottom: 10px !important;
-    color: yellow;
-    letter-spacing: 2px;
-    text-align: center;
-}
-
 #main-container {
     width: 100%;
-    height: 600px;
+    height: 735px;
     display: flex;
     justify-content: center;
 }
 
 #board-frame {
-    width: 600px;
-    height: 600px;
+    width: 735px;
+    height: 735px;
     padding: 30px;
     box-sizing: border-box;
     background: black;
@@ -100,7 +91,7 @@
     line-height: 30px;
     position: absolute;
     display: flex;
-    width: 540px;
+    width: 675px;
     box-sizing: border-box;
     height: 30px;
     top: 0;
@@ -121,7 +112,7 @@
     display: flex;
     width: 32px;
     box-sizing: border-box;
-    height: 540px;
+    height: 675px;
     top: 29px;
     left: -1px;
     flex-direction: column;
@@ -130,7 +121,7 @@
 
 .v-markers {
     height: 100%;
-    margin-top: 15px;
+    margin-top: 22px;
     box-sizing: border-box;
     width: 100%;
     color: white;
@@ -138,8 +129,8 @@
 }
 
 #board {
-    width: 540px;
-    height: 540px;
+    width: 675px;
+    height: 675px;
     background-image: url('img/board.jpg');
     position: relative;
     box-sizing: border-box;
@@ -148,18 +139,20 @@
 }
 
 .square {
-    width: 37px;
-    height: 37px;
+    width: 47px;
+    height: 47px;
     position: absolute;
     /* border: 1px solid red; */
 }
 
 .disc {
-    width: 35px;
-    height: 35px;
+    width: 47px;
+    height: 47px;
     position: absolute;
-    background-image: url('img/tokens.png');
+    background-image: url('img/lodestones.png');
     background-size: auto 100%;
+    border-radius: 50%;
+    box-shadow: 2px 2px 5px black;
 }
 .disc[data-color="ffffff"] { background-position-x: 0%; }
 .disc[data-color="000000"] { background-position-x: 100%; }
@@ -247,7 +240,7 @@
     text-align: center;
     box-sizing: border-box;
     border: 1px solid black;
-    width: 250px;
+    width: 300px;
     border-radius: 22px;
     padding: 8px;
     color: white;
@@ -267,7 +260,7 @@
     text-align: center;
     box-sizing: border-box;
     border: 1px solid black;
-    width: 250px;
+    width: 300px;
     border-radius: 22px;
     padding: 8px;
     color: black;
@@ -299,12 +292,12 @@
 }
 
 .score-tile {
-    width: 200px;
-    height: 110%;
+    width: 250px;
+    height: 120%;
     margin: 0 auto;
     border-radius: 75%;
     position: absolute;
-    top: 55%;
+    top: 60%;
     left: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 1px 1px 18px black;
@@ -313,7 +306,7 @@
 
 .score {
     position: relative;
-    top: 35%;
+    top: 40%;
     left: 75%;
     transform: translate(-50%, -50%);
     font-size: 20px;

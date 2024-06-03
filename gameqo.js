@@ -59,18 +59,20 @@ function (dojo, declare) {
             
             // TODO: Set up your game interface here, according to "gamedatas"
             const board = document.getElementById('board');
-            const hor_scale = 62.5;
-            const ver_scale = 62.5;
+            const playerOneStone = document.getElementById('lodestone-1');
+            const playerOneScore = document.getElementById('score-1');
+            const playerTwoStone = document.getElementById('lodestone-2');
+            const playerTwoScore = document.getElementById('score-2');
+            const hor_scale = 78;
+            const ver_scale = 78;
             for (let x=1; x<=9; x++) {
                 for (let y=1; y<=9; y++) {
                     const left = Math.round((x - 1) * hor_scale);
-                    const top = Math.round((y - 1) * ver_scale + 2);
+                    const top = Math.round((y - 1) * ver_scale);
                     // we use afterbegin to make sure quares are placed before discs
                     board.insertAdjacentHTML(`afterbegin`, `<div id="square_${x}_${y}" class="square" style="left: ${left}px; top: ${top}px;"></div>`);
                 }
             }
-
-            // this.addDiscOnBoard(2, 3, this.player_id);
 
             for( var i in gamedatas.board )
             {
@@ -81,6 +83,13 @@ function (dojo, declare) {
                     this.addDiscOnBoard( square.x, square.y, square.player );
                 }
             }
+
+            playerOneStone.insertAdjacentText('afterbegin', '81');
+            playerOneScore.insertAdjacentText('afterbegin', '7');
+            playerTwoStone.insertAdjacentText('afterbegin', '79');
+            playerTwoScore.insertAdjacentText('afterbegin', '11');
+
+            // this.addDiscOnBoard( 2, 3, this.player_id );
 
             document.querySelectorAll('.square').forEach(square => square.addEventListener('click', e => this.onPlayDisc(e)));
             
