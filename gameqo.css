@@ -158,9 +158,6 @@
 .disc[data-color="000000"] { background-position-x: 100%; }
 
 .possibleMove {
-    background-color: #ffffff;
-    border-radius: 50%;
-    opacity: 0.5; 
     cursor: pointer;  
 }
 

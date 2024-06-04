@@ -16,11 +16,11 @@
  */
 
 define([
-    "dojo","dojo/_base/declare",
+    "dojo","dojo/_base/declare", "dojo/dom", "dojo/html",
     "ebg/core/gamegui",
     "ebg/counter"
 ],
-function (dojo, declare) {
+function (dojo, declare, dom, html) {
     return declare("bgagame.gameqo", ebg.core.gamegui, {
         constructor: function(){
             console.log('gameqo constructor');
@@ -113,7 +113,10 @@ function (dojo, declare) {
                         className = "last-move-tile-black";
                     }
 
-                    moveRecord.insertAdjacentHTML(`afterbegin`, `<div class="last-move-slot"><div class="${className}"></div><div class="last-move-number">${gamedatas.record[i]['position']}</div></div>`)
+                    moveRecord.insertAdjacentHTML(
+                        `afterbegin`, 
+                        `<div class="last-move-slot"><div class="${className}"></div><div class="last-move-number">${gamedatas.record[i]['position']}</div></div>`
+                    );
                     
                 }
             }
@@ -347,41 +350,64 @@ function (dojo, declare) {
             document.querySelectorAll('.possibleMove').forEach(div => div.classList.remove('possibleMove'));
         
             this.addDiscOnBoard( notif.args.x, notif.args.y, notif.args.player_id );
+
+            var color = notif.args.colors[ notif.args.player_id ];
+
+            var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+
+            var move = position_y_arr[notif.args.y - 1] + notif.args.x;
+            var className = "last-move-tile-black";
+            if (color === "ffffff") className = "last-move-tile-white"
+
+            document.getElementById("move-record").insertAdjacentHTML(
+                `afterbegin`,
+                `<div class="last-move-slot"><div class="${className}"></div><div class="last-move-number">${move}</div></div>`
+            )
+
         },
-        
-        notif_turnOverDiscs: function( notif )
-        {
-            // Get the color of the player who is returning the discs
-            var targetColor = this.gamedatas.players[ notif.args.player_id ].color;
 
-            // Made these discs blinking and set them to the specified color
-            for( var i in notif.args.turnedOver )
-            {
-                var disc = notif.args.turnedOver[ i ];
+        notif_turnOverDiscs: function(notif) {
+            // Make these discs blink and then hide them
+            for (var i in notif.args.turnedOver) {
+                var disc = notif.args.turnedOver[i];
                 
-                // Make the disc blink 2 times
-                var anim = dojo.fx.chain( [
-                    dojo.fadeOut( { node: 'disc_'+disc.x+''+disc.y } ),
-                    dojo.fadeIn( { node: 'disc_'+disc.x+''+disc.y } ),
-                    dojo.fadeOut( { 
-                                    node: 'disc_'+disc.x+''+disc.y,
-                                    onEnd: node => $(node).dataset.color = targetColor,
-                                } ),
-                    dojo.fadeIn( { node: 'disc_'+disc.x+''+disc.y  } )
-                                
-                ] ); // end of dojo.fx.chain
-
+                // Make the disc blink once and then hide it
+                var anim = dojo.fx.chain([
+                    dojo.fadeOut({ node: 'disc_' + disc.x + '' + disc.y }),
+                    dojo.fadeIn({ node: 'disc_' + disc.x + '' + disc.y }),
+                    dojo.fadeOut({ 
+                        node: 'disc_' + disc.x + '' + disc.y
+                    })
+                ]); // end of dojo.fx.chain
+        
                 // ... and launch the animation
-                anim.play();                
+                anim.play();
             }
         },
+
         notif_newScores: function( notif )
         {
             for( var player_id in notif.args.scores )
             {
+                var color = notif.args.colors[ player_id ];
                 var newScore = notif.args.scores[ player_id ];
+                var newStone = notif.args.stones[ player_id ];
                 this.scoreCtrl[ player_id ].toValue( newScore );
+
+                var idNumber = "1";
+                
+                if (color === "ffffff") idNumber = "2";
+                
+                var scoreId = "score-" + idNumber;
+                var stoneId = "lodestone-" + idNumber;
+
+                var scoreElement = dom.byId(scoreId);
+                var stoneElement = dom.byId(stoneId);
+                html.set(scoreElement, newScore);
+                html.set(stoneElement, newStone);
             }
+
+
         }
    });             
 });

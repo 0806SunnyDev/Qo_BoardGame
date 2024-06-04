@@ -191,8 +191,8 @@ class GameQo extends Table
                     else if( $board[ $current_x ][ $current_y ] != $player )
                     {
                         $flag = true;
-                        $mayBeTurnedOverForOneStone[] = array( 'x' => $current_x, 'y' => $current_y );
-                        $mayBeTurnedOver = array_merge( $mayBeTurnedOver, $mayBeTurnedOverForOneStone );
+                        $mayBeTurnedOverForOneStone = array( 'x' => $current_x, 'y' => $current_y );
+                        $mayBeTurnedOver[] = $mayBeTurnedOverForOneStone;
                     }
                 }
 
@@ -293,10 +293,15 @@ class GameQo extends Table
             $this->incStat( 1, 'discPlayedOnCenter', $player_id );
         
         // Notify
+        $newScores = $this->getCollectionFromDb( "SELECT player_id, player_score FROM player", true );
+        $newStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
+        $newColors = $this->getCollectionFromDb( "SELECT player_id, player_color FROM player", true );
+        
         $this->notifyAllPlayers( "playDisc", clienttranslate( '${player_name} plays a lodestone and captured ${returned_nbr} lodestone(s)' ), array(
             'player_id' => $player_id,
             'player_name' => $this->getActivePlayerName(),
             'returned_nbr' => count( $turnedOverDiscs ),
+            'colors' => $newColors,
             'x' => $x,
             'y' => $y
         ) );
@@ -306,9 +311,10 @@ class GameQo extends Table
             'turnedOver' => $turnedOverDiscs
         ) );
         
-        $newScores = $this->getCollectionFromDb( "SELECT player_id, player_score FROM player", true );
         $this->notifyAllPlayers( "newScores", "", array(
-            "scores" => $newScores
+            "scores" => $newScores,
+            "stones" => $newStones,
+            "colors" => $newColors,
         ) );
         
         // Then, go to the next state
@@ -336,10 +342,36 @@ class GameQo extends Table
         // Active next player
         $player_id = intval($this->activeNextPlayer());
 
+        $board = $this->getBoard();
+
         // Check if both player has at least 1 discs, and if there are free squares to play
         $player_to_discs = $this->getCollectionFromDb( "SELECT board_player, COUNT( board_x )
                                                     FROM board
                                                     GROUP BY board_player", true );
+        $player_remain_stones = $this->getCollectionFromDb( "SELECT player_id, player_stone
+                                                        FROM player", true);
+
+        $i = 1;
+        $j = 1;
+        $h_flag = true;
+        $v_flag = true;
+
+        while ($i <= 9 && ( $h_flag || $v_flag )) {
+            while ($j <= 9 && ( $h_flag || $v_flag )) {
+                if ($board[$i][$j] != $player_id) $h_flag = false;
+                if ($board[$j][$i] != $player_id) $v_flag = false;
+                $j++;
+            }
+            
+            if ($h_flag || $v_flag) {
+                $this->gamestate->nextState( 'endGame' );
+                return ;
+            } else {
+                $h_flag = true;
+                $v_flag = true;
+                $i++;
+            }
+        }
 
         if( ! isset( $player_to_discs[ null ] ) )
         {
@@ -348,7 +380,7 @@ class GameQo extends Table
             $this->gamestate->nextState( 'endGame' );
             return ;
         }
-        else if( ! isset( $player_to_discs[ null ] ) && ! isset( $player_to_discs[ $player_id ] ) )
+        else if( $player_remain_stones[$player_id] == "0" )
         {
             // Active player has no more disc on the board => he looses immediately
             $this->gamestate->nextState( 'endGame' );
@@ -360,6 +392,20 @@ class GameQo extends Table
             $this->giveExtraTime( $player_id );
             $this->gamestate->nextState( 'nextTurn' );
         }
+    }
+
+    function stGameEnd()
+    {
+        // Calculate final scores, if necessary
+        // $finalScores = $this->calculateFinalScores();
+
+        // Notify all players about the end of the game
+        $this->notifyAllPlayers("endGame", clienttranslate("The game has ended."), array(
+            // Add any relevant data here
+        ));
+
+        // Go to the end of game state
+        $this->gamestate->nextState("gameEnd");
     }
 
 //////////////////////////////////////////////////////////////////////////////
