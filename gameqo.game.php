@@ -67,7 +67,7 @@ class GameQo extends Table
         $sql .= implode( ',', $values );
         $this->DbQuery( $sql );
         $this->reloadPlayersBasicInfos();
-        
+
         /************ Start the game initialization *****/
 
         // Init the board
@@ -79,10 +79,10 @@ class GameQo extends Table
             for( $y=1; $y<=9; $y++ )
             {
                 $token_value = "NULL";
-                if( ($x==4 && $y==5) || ($x==6 && $y==5) )  // Initial positions of white player
-                    $token_value = "'$whiteplayer_id'";
-                else if( ($x==5 && $y==4) || ($x==5 && $y==6) )  // Initial positions of black player
-                    $token_value = "'$blackplayer_id'";
+                // if( ($x==4 && $y==5) || ($x==6 && $y==5) )  // Initial positions of white player
+                //     $token_value = "'$whiteplayer_id'";
+                // else if( ($x==5 && $y==4) || ($x==5 && $y==6) )  // Initial positions of black player
+                //     $token_value = "'$blackplayer_id'";
                     
                 $sql_values[] = "('$x','$y',$token_value)";
             }
@@ -114,7 +114,7 @@ class GameQo extends Table
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, player_score score, player_color color FROM player ";
+        $sql = "SELECT player_id id, player_score score, player_color color, player_stone stone FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
   
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -228,19 +228,20 @@ class GameQo extends Table
         {
             for( $y=1; $y<=9; $y++ )
             {
-                $returned = $this->getTurnedOverDiscs( $x, $y, $player_id, $board );
-                if( count( $returned ) == 0 )
-                {
-                    // No discs returned => not a possible move
-                }
-                else
-                {
-                    // Okay => set this coordinate to "true"
-                    if( ! isset( $result[$x] ) )
-                        $result[$x] = [];
+                if( $board[ $x ][ $y ] === null ) $result[$x][$y] = true;
+                // $returned = $this->getTurnedOverDiscs( $x, $y, $player_id, $board );
+                // if( count( $returned ) == 0 )
+                // {
+                //     // No discs returned => not a possible move
+                // }
+                // else
+                // {
+                //     // Okay => set this coordinate to "true"
+                //     if( ! isset( $result[$x] ) )
+                //         $result[$x] = [];
                         
-                    $result[$x][$y] = true;
-                }
+                //     $result[$x][$y] = true;
+                // }
             }
         }
                 

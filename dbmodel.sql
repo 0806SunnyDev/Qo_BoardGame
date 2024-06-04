@@ -39,3 +39,5 @@ CREATE TABLE IF NOT EXISTS `board` (
   `board_player` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`board_x`,`board_y`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `player` ADD `player_stone` INT UNSIGNED NOT NULL DEFAULT '89';

@@ -48,21 +48,33 @@ function (dojo, declare) {
         {
             console.log( "Starting creating player boards" );
             console.log("game datas => ", gamedatas)
+
+            const playerOneStone = document.getElementById('lodestone-1');
+            const playerOneScore = document.getElementById('score-1');
+            const playerTwoStone = document.getElementById('lodestone-2');
+            const playerTwoScore = document.getElementById('score-2');
             
             // Setting up player boards
             for( var player_id in gamedatas.players )
             {
                 var player = gamedatas.players[player_id];
+
+                // console.log('player => ', player['id']);
+
+                if (player['color'] === '000000') {
+                    playerOneStone.insertAdjacentText('afterbegin', player['stone']);
+                    playerOneScore.insertAdjacentText('afterbegin', player['score']);
+                } else {
+                    playerTwoStone.insertAdjacentText('afterbegin', player['stone']);
+                    playerTwoScore.insertAdjacentText('afterbegin', player['score']);
+                }
                             
                 // TODO: Setting up players boards if needed
             }
             
             // TODO: Set up your game interface here, according to "gamedatas"
             const board = document.getElementById('board');
-            const playerOneStone = document.getElementById('lodestone-1');
-            const playerOneScore = document.getElementById('score-1');
-            const playerTwoStone = document.getElementById('lodestone-2');
-            const playerTwoScore = document.getElementById('score-2');
+            
             const hor_scale = 78;
             const ver_scale = 78;
             for (let x=1; x<=9; x++) {
@@ -83,11 +95,6 @@ function (dojo, declare) {
                     this.addDiscOnBoard( square.x, square.y, square.player );
                 }
             }
-
-            playerOneStone.insertAdjacentText('afterbegin', '81');
-            playerOneScore.insertAdjacentText('afterbegin', '7');
-            playerTwoStone.insertAdjacentText('afterbegin', '79');
-            playerTwoScore.insertAdjacentText('afterbegin', '11');
 
             // this.addDiscOnBoard( 2, 3, this.player_id );
 
