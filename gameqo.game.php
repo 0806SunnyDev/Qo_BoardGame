@@ -122,6 +122,8 @@ class GameQo extends Table
         $result['board'] = self::getObjectListFromDB( "SELECT board_x x, board_y y, board_player player
                                                        FROM board
                                                        WHERE board_player IS NOT NULL" );
+
+        $result['record'] = self::getObjectListFromDB( "SELECT player, position FROM record " );
   
         return $result;
     }
@@ -254,7 +256,7 @@ class GameQo extends Table
         $sql = "UPDATE player SET player_stone = player_stone - 1 WHERE player_id='$player_id'";
         $this->DbQuery( $sql );
 
-        $sql = "INSERT INTO `record`(`position`) VALUES ('" . $positionArr[$y] . $x . "')";
+        $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $player_id . "', '" . $positionArr[$y] . $x . "')";
         $this->DbQuery( $sql );
         
         if( count( $turnedOverDiscs ) > 0 )

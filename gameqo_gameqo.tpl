@@ -29,20 +29,12 @@
             <div class="v-markers">I</div>
         </div>
     </div>
-    <div class="last-move-display-container">
-        <div class="last-move-slot">
-            <div class="last-move-tile-white"></div>
-            <div class="last-move-number">F6</div>
-        </div>
-        <div class="last-move-slot">
-            <div class="last-move-tile-black"></div>
-            <div class="last-move-number">E6</div>
-        </div>
+    <div class="last-move-display-container" id="move-record">
     </div> 
 </div>
 <div class="score-container">
     <div class="score-inner-container">
-        <div class="name-black" id="player-name-1">Player-1</div>
+        <div class="name-black" id="player-name-1"></div>
         <div class="tile-container">
             <div class="score-tile score-black">
                 <div class="score" id="black-score">Lodestone: <span id="lodestone-1"><span></div>
@@ -51,7 +43,7 @@
         </div>
     </div>
     <div class="score-inner-container">
-        <div class="name-white" id="player-name-2">Player-2</div>
+        <div class="name-white" id="player-name-2"></div>
         <div class="tile-container">
             <div class="score-tile score-white">
                 <div class="score" id="white-score">Lodestone: <span id="lodestone-2"><span></div>

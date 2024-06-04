@@ -47,8 +47,10 @@ function (dojo, declare) {
         setup: function( gamedatas )
         {
             console.log( "Starting creating player boards" );
-            console.log("game datas => ", gamedatas)
+            console.log(gamedatas)
 
+            const playerNameOne = document.getElementById('player-name-1');
+            const playerNameTwo = document.getElementById('player-name-2');
             const playerOneStone = document.getElementById('lodestone-1');
             const playerOneScore = document.getElementById('score-1');
             const playerTwoStone = document.getElementById('lodestone-2');
@@ -62,9 +64,11 @@ function (dojo, declare) {
                 // console.log('player => ', player['id']);
 
                 if (player['color'] === '000000') {
+                    playerNameOne.insertAdjacentText('afterbegin', player['name'])
                     playerOneStone.insertAdjacentText('afterbegin', player['stone']);
                     playerOneScore.insertAdjacentText('afterbegin', player['score']);
                 } else {
+                    playerNameTwo.insertAdjacentText('afterbegin', player['name'])
                     playerTwoStone.insertAdjacentText('afterbegin', player['stone']);
                     playerTwoScore.insertAdjacentText('afterbegin', player['score']);
                 }
@@ -93,6 +97,24 @@ function (dojo, declare) {
                 if( square.player !== null )
                 {
                     this.addDiscOnBoard( square.x, square.y, square.player );
+                }
+            }
+
+            if (gamedatas.record.length !== 0) {
+                const moveRecord = document.getElementById('move-record');
+
+                for (let i = 0; i < gamedatas.record.length; i++) {
+                    const player_id = gamedatas.record[i]['player']
+                    var player_color = gamedatas.players[player_id]['color'];
+                    
+                    let className = "last-move-tile-white";
+
+                    if (player_color === "000000") {
+                        className = "last-move-tile-black";
+                    }
+
+                    moveRecord.insertAdjacentHTML(`afterbegin`, `<div class="last-move-slot"><div class="${className}"></div><div class="last-move-number">${gamedatas.record[i]['position']}</div></div>`)
+                    
                 }
             }
 
