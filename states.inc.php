@@ -64,8 +64,8 @@ $machinestates = array(
     
     ST_PLAYER_PLAY_DISC => array(
         "name" => "playerTurn",
-		"description" => clienttranslate('${actplayer} must play a disc'),
-		"descriptionmyturn" => clienttranslate('${you} must play a disc'),
+		"description" => clienttranslate('${actplayer} must play a lodestone'),
+		"descriptionmyturn" => clienttranslate('${you} must play a lodestone'),
         "type" => "activeplayer",
         "args" => "argPlayerTurn",
         "possibleactions" => array( 'playDisc' ),

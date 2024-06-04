@@ -40,4 +40,9 @@ CREATE TABLE IF NOT EXISTS `board` (
   PRIMARY KEY (`board_x`,`board_y`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `record` (
+  `position` varchar(16) NOT NULL,
+  PRIMARY KEY (`position`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 ALTER TABLE `player` ADD `player_stone` INT UNSIGNED NOT NULL DEFAULT '89';

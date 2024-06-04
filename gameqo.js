@@ -202,7 +202,7 @@ function (dojo, declare) {
                 }            
             }
                         
-            this.addTooltipToClass( 'possibleMove', '', _('Place a disc here') );
+            this.addTooltipToClass( 'possibleMove', '', _('Place a lodestone here') );
         },
 
         onPlayDisc: function( evt )
