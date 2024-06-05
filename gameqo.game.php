@@ -351,41 +351,38 @@ class GameQo extends Table
         $player_remain_stones = $this->getCollectionFromDb( "SELECT player_id, player_stone
                                                         FROM player", true);
 
-        $i = 1;
-        $j = 1;
-        $h_flag = true;
-        $v_flag = true;
+        $v_flag = 1;
+        $h_flag = 1;
 
-        // while ($i <= 9 && ( $h_flag || $v_flag )) {
-        //     while ($j <= 9 && ( $h_flag || $v_flag )) {
-        //         if ($board[$i][$j] != $player_id) $h_flag = false;
-        //         if ($board[$j][$i] != $player_id) $v_flag = false;
-        //         $j++;
-        //     }
-            
-        //     if ($h_flag || $v_flag) {
-        //         echo("##### => end of game at this moment");
-        //         $this->gamestate->nextState( 'endGame' );
-        //         return ;
-        //     } else {
-        //         $h_flag = true;
-        //         $v_flag = true;
-        //         $i++;
-        //     }
-        // }
+        for ($i=1; $i <= 9; $i++) { 
+            for ($j=1; $j <= 9; $j++) { 
+                if($board[$i][$j] != $player_id) {
+                    $v_flag = 2;
+                }
+                if($board[$j][$i] != $player_id) {
+                    $h_flag = 2;
+                }
+            }
+            if ($v_flag == 1 || $h_flag == 1) {
+                $this->gamestate->nextState( 'endGame' );
+                return ;
+            }
+            else {
+                $v_flag = 1;
+                $h_flag = 1;
+            }
+        }
 
         if( ! isset( $player_to_discs[ null ] ) )
         {
             // Index 0 has not been set => there's no more free place on the board !
             // => end of the game
-            echo("##### => there's no more free place on the board");
             $this->gamestate->nextState( 'endGame' );
             return ;
         }
         else if( $player_remain_stones[$player_id] == "0" )
         {
             // Active player has no more lodestones to play on the board
-            echo("##### => Active player has no more lodestones to play on the board");
             $this->gamestate->nextState( 'endGame' );
             return ;
         }
