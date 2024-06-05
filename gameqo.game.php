@@ -351,6 +351,7 @@ class GameQo extends Table
         $player_remain_stones = $this->getCollectionFromDb( "SELECT player_id, player_stone
                                                         FROM player", true);
 
+        // Check it the active player has made the perfect horizontal or vertical stone line
         $v_flag = 1;
         $h_flag = 1;
 
@@ -392,20 +393,6 @@ class GameQo extends Table
             $this->giveExtraTime( $player_id );
             $this->gamestate->nextState( 'nextTurn' );
         }
-    }
-
-    function stGameEnd()
-    {
-        // Calculate final scores, if necessary
-        // $finalScores = $this->calculateFinalScores();
-
-        // Notify all players about the end of the game
-        $this->notifyAllPlayers("endGame", clienttranslate("The game has ended."), array(
-            // Add any relevant data here
-        ));
-
-        // Go to the end of game state
-        $this->gamestate->nextState("gameEnd");
     }
 
 //////////////////////////////////////////////////////////////////////////////
