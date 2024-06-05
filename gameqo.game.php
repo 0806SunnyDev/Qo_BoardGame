@@ -235,7 +235,7 @@ class GameQo extends Table
 //////////// Player actions
 //////////// 
 
-    function playDisc( int $x, int $y )
+    function playDisc( int $x, int $y, $advanceState = true )
     {
         // Check that this player is active and that this action is possible at this moment
         $this->checkAction( 'playDisc' );  
@@ -316,9 +316,11 @@ class GameQo extends Table
             "stones" => $newStones,
             "colors" => $newColors,
         ) );
-        
-        // Then, go to the next state
-        $this->gamestate->nextState( 'playDisc' );
+
+        // Advance game state if specified
+        if ($advanceState) {
+            $this->gamestate->nextState( 'playDisc' );
+        }
     }
 
     
@@ -339,6 +341,17 @@ class GameQo extends Table
 
     function stNextPlayer(): void
     {
+        // Check if the active player is a zombie
+        $active_player_id = intval($this->getActivePlayerId());
+        if ($this->isZombie($active_player_id)) {
+            // Only call zombieTurn in compatible game states
+            $state = $this->gamestate->state();
+            if ($state['type'] === "activeplayer") {
+                $this->zombieTurn($state, $active_player_id);
+                return;
+            }
+        }
+        
         // Active next player
         $player_id = intval($this->activeNextPlayer());
 
@@ -381,7 +394,7 @@ class GameQo extends Table
             $this->gamestate->nextState( 'endGame' );
             return ;
         }
-        else if( $player_remain_stones[$player_id] == "0" )
+        else if( intval($player_remain_stones[$player_id]) === 0 )
         {
             // Active player has no more lodestones to play on the board
             $this->gamestate->nextState( 'endGame' );
@@ -412,28 +425,64 @@ class GameQo extends Table
         you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message. 
     */
 
-    function zombieTurn( $state, $active_player )
+    function zombieTurn($state, $active_player)
     {
-    	$statename = $state['name'];
-    	
+        $statename = $state['name'];
+        
         if ($state['type'] === "activeplayer") {
-            switch ($statename) {
-                default:
-                    $this->gamestate->nextState( "zombiePass" );
-                	break;
-            }
-
+            // Handle zombie turn for active player state
+            // Place a lodestone in any empty place on the board
+            $this->placeRandomLodestone();
+            $this->gamestate->nextState("zombiePass");
             return;
         }
 
         if ($state['type'] === "multipleactiveplayer") {
-            // Make sure player is in a non blocking status for role turn
-            $this->gamestate->setPlayerNonMultiactive( $active_player, '' );
-            
+            // Make sure player is in a non-blocking status for role turn
+            $this->gamestate->setPlayerNonMultiactive($active_player, '');
             return;
         }
 
-        throw new feException( "Zombie mode not supported at this game state: ".$statename );
+        throw new feException("Zombie mode not supported at this game state: " . $statename);
+    }
+
+    function isZombie($player_id)
+    {
+        // Check if the player is in a zombie state
+        $sql = "SELECT player_zombie FROM player WHERE player_id = $player_id";
+        $is_zombie = $this->getUniqueValueFromDB($sql);
+        
+        // Return true if the player is a zombie, otherwise return false
+        return ($is_zombie == 1);
+    }
+
+    function placeRandomLodestone()
+    {
+        // Get all possible empty places on the board
+        $empty_places = $this->getEmptyPlaces();
+
+        // Choose a random empty place
+        $random_index = array_rand($empty_places);
+        $random_place = $empty_places[$random_index];
+
+        // Place a lodestone in the random empty place
+        $x = $random_place['x'];
+        $y = $random_place['y'];
+        $this->playDisc($x, $y, false); // Call playDisc() without advancing game state
+    }
+
+    function getEmptyPlaces()
+    {
+        $empty_places = [];
+        $board = $this->getBoard();
+        for ($x = 1; $x <= 9; $x++) {
+            for ($y = 1; $y <= 9; $y++) {
+                if ($board[$x][$y] === null) {
+                    $empty_places[] = array('x' => $x, 'y' => $y);
+                }
+            }
+        }
+        return $empty_places;
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:
