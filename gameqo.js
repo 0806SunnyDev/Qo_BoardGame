@@ -367,16 +367,19 @@ function (dojo, declare, dom, html) {
         },
 
         notif_turnOverDiscs: function(notif) {
-            // Make these discs blink and then hide them
+            // Make these discs blink and then remove them
             for (var i in notif.args.turnedOver) {
                 var disc = notif.args.turnedOver[i];
                 
-                // Make the disc blink once and then hide it
+                // Make the disc blink once and then remove it
                 var anim = dojo.fx.chain([
                     dojo.fadeOut({ node: 'disc_' + disc.x + '' + disc.y }),
                     dojo.fadeIn({ node: 'disc_' + disc.x + '' + disc.y }),
                     dojo.fadeOut({ 
-                        node: 'disc_' + disc.x + '' + disc.y
+                        node: 'disc_' + disc.x + '' + disc.y,
+                        onEnd: function(node){
+                            dojo.destroy(node); // Remove the DOM element after animation
+                        }
                     })
                 ]); // end of dojo.fx.chain
         
