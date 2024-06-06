@@ -2,13 +2,13 @@
  /**
   *------
   * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
-  * GameQo implementation : © <Your name here> <Your email address here>
+  * Qo implementation : © <Your name here> <Your email address here>
   * 
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
   * -----
   * 
-  * gameqo.game.php
+  * qo.game.php
   *
   * This is the main file for your game logic.
   *
@@ -20,7 +20,7 @@
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
 
-class GameQo extends Table
+class Qo extends Table
 {
 	function __construct( )
 	{
@@ -32,13 +32,20 @@ class GameQo extends Table
         // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
-        $this->initGameStateLabels( [] );        
+        $this->initGameStateLabels( array( 
+            //    "my_first_global_variable" => 10,
+            //    "my_second_global_variable" => 11,
+            //      ...
+            //    "my_first_game_variant" => 100,
+            //    "my_second_game_variant" => 101,
+            //      ...
+        ) );        
 	}
 	
     protected function getGameName( )
     {
 		// Used for translations and stuff. Please do not modify.
-        return "gameqo";
+        return "qo";
     }	
 
     /*
@@ -48,7 +55,7 @@ class GameQo extends Table
         In this method, you must setup the game according to the game rules, so that
         the game is ready to be played.
     */
-    protected function setupNewGame( $players, $options = [] )
+    protected function setupNewGame( $players, $options = array() )
     {    
         // Create players
         $default_color = array( "000000", "ffffff" );
@@ -163,7 +170,10 @@ class GameQo extends Table
         if( $board[ $x ][ $y ] === null ) // If there is already a disc on this place, this can't be a valid move
         {
             // For each directions...
-            $directions = array( array( -1,0 ), array( 0, -1), array( 0,1 ), array( 1,0 ) );
+            $directions = array(
+                array( -1,-1 ), array( -1,0 ), array( -1, 1 ), array( 0, -1),
+                array( 0,1 ), array( 1,-1), array( 1,0 ), array( 1, 1 )
+            );
             $mayBeTurnedOver = [];
             
             foreach( $directions as $direction )
@@ -171,7 +181,7 @@ class GameQo extends Table
                 // Starting from the square we want to place a disc...
                 $current_x = $x;
                 $current_y = $y;
-                $mayBeTurnedOverForOneStone = [];
+                $mayBeTurnedOverDisc = [];
                 $bContinue = true;
                 $flag = false;
 
@@ -181,8 +191,9 @@ class GameQo extends Table
                     $current_x += $direction[0];
                     $current_y += $direction[1];
                     
-                    if( $current_x<1 || $current_x>9 || $current_y<1 || $current_y>9 )
+                    if( $current_x<1 || $current_x>9 || $current_y<1 || $current_y>9 ) {
                         $bContinue = false; // Out of the board => stop here for this direction
+                    }
                     else if( $board[ $current_x ][ $current_y ] === null )
                     {
                         if ( $flag ) $mayBeTurnedOver = [];
@@ -195,14 +206,14 @@ class GameQo extends Table
                     else if( $board[ $current_x ][ $current_y ] != $player )
                     {
                         $flag = true;
-                        $mayBeTurnedOverForOneStone = array( 'x' => $current_x, 'y' => $current_y );
-                        $mayBeTurnedOver[] = $mayBeTurnedOverForOneStone;
+                        $mayBeTurnedOverDisc = array( 'x' => $current_x, 'y' => $current_y );
+                        $mayBeTurnedOver[] = $mayBeTurnedOverDisc;
                     }
                 }
 
                 if (count($mayBeTurnedOver) == $stoneCountLimit) {
-                    $turnedOverDiscs = $mayBeTurnedOver;
-                }
+                    $turnedOverDiscs=array_merge($turnedOverDiscs, $mayBeTurnedOver);
+                } else $mayBeTurnedOver = [];
             } 
         }
         return $turnedOverDiscs;

@@ -1,29 +1,12 @@
-/**
- *------
- * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * GameQo implementation : © <Your name here> <Your email address here>
- *
- * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
- * See http://en.boardgamearena.com/#!doc/Studio for more information.
- * -----
- *
- * gameqo.js
- *
- * GameQo user interface script
- * 
- * In this file, you are describing the logic of your user interface, in Javascript language.
- *
- */
-
 define([
     "dojo","dojo/_base/declare", "dojo/dom", "dojo/html",
     "ebg/core/gamegui",
     "ebg/counter"
 ],
 function (dojo, declare, dom, html) {
-    return declare("bgagame.gameqo", ebg.core.gamegui, {
+    return declare("bgagame.qo", ebg.core.gamegui, {
         constructor: function(){
-            console.log('gameqo constructor');
+            console.log('qo constructor');
 
             this.boardData = [];
             this.playEvtFlag = 1;
@@ -270,6 +253,7 @@ function (dojo, declare, dom, html) {
             }
                         
             this.addTooltipToClass( 'possibleMove', '', _('Place a lodestone here') );
+            this.addTooltipToClass( 'disc', '', _('Click to move this lodestone') );
         },
 
         onPlayDisc: function( evt )
@@ -297,7 +281,7 @@ function (dojo, declare, dom, html) {
 
                 if( this.checkAction( 'playDisc' ) )    // Check that this action is possible at this moment
                 {            
-                    this.ajaxcall( "/gameqo/gameqo/playDisc.html", {
+                    this.ajaxcall( "/qo/qo/playDisc.html", {
                         x:x,
                         y:y,
                     }, this, function( result ) {} );
@@ -367,7 +351,7 @@ function (dojo, declare, dom, html) {
 
                 if( this.checkAction( 'playDisc' ) && possiblity )    // Check that this action is possible at this moment
                 {            
-                    this.ajaxcall( "/gameqo/gameqo/playDisc.html", {
+                    this.ajaxcall( "/qo/qo/playDisc.html", {
                             x:beforePos,
                             y:afterPos,
                     }, this, function( result ) { console.log("result => ", result)} );
@@ -426,7 +410,7 @@ function (dojo, declare, dom, html) {
             if( ! this.checkAction( 'myAction' ) )
             {   return; }
 
-            this.ajaxcall( "/gameqo/gameqo/myAction.html", { 
+            this.ajaxcall( "/qo/qo/myAction.html", { 
                                                                     lock: true, 
                                                                     myArgument1: arg1, 
                                                                     myArgument2: arg2,
@@ -457,7 +441,7 @@ function (dojo, declare, dom, html) {
             In this method, you associate each of your game notifications with your local method to handle it.
             
             Note: game notification names correspond to "notifyAllPlayers" and "notifyPlayer" calls in
-                  your gameqo.game.php file.
+                  your qo.game.php file.
         
         */
         setupNotifications: function()

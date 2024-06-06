@@ -2,13 +2,13 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * GameQo implementation : © <Your name here> <Your email address here>
+ * Qo implementation : © <Your name here> <Your email address here>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  *
- * gameqo.view.php
+ * qo.view.php
  *
  * This is your "view" file.
  *
@@ -17,7 +17,7 @@
  * _ when a player refreshes the game page (F5)
  *
  * "build_page" method allows you to dynamically modify the HTML generated for the game interface. In
- * particular, you can set here the values of variables elements defined in gameqo_gameqo.tpl (elements
+ * particular, you can set here the values of variables elements defined in qo_qo.tpl (elements
  * like {MY_VARIABLE_ELEMENT}), and insert HTML block elements (also defined in your HTML template file)
  *
  * Note: if the HTML of your game interface is always the same, you don't have to place anything here.
@@ -26,12 +26,12 @@
   
 require_once( APP_BASE_PATH."view/common/game.view.php" );
   
-class view_gameqo_gameqo extends game_view
+class view_qo_qo extends game_view
 {
     protected function getGameName()
     {
         // Used for translations and stuff. Please do not modify.
-        return "gameqo";
+        return "qo";
     }
     
   	function build_page( $viewArgs )
@@ -67,7 +67,7 @@ class view_gameqo_gameqo extends game_view
         //      <!-- END myblock --> 
         
 
-        $this->page->begin_block( "gameqo_gameqo", "myblock" );
+        $this->page->begin_block( "qo_qo", "myblock" );
         foreach( $players as $player )
         {
             $this->page->insert_block( "myblock", array( 

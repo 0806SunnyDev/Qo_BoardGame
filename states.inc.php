@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * GameQo implementation : © <Your name here> <Your email address here>
+ * Qo implementation : © <Your name here> <Your email address here>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -10,7 +10,7 @@
  * 
  * states.inc.php
  *
- * GameQo game states description
+ * Qo game states description
  *
  */
 
@@ -49,7 +49,7 @@
 
 //    !! It is not a good idea to modify this file when a game is running !!
 
-
+ 
 require_once("modules/php/constants.inc.php");
 
 $machinestates = array(

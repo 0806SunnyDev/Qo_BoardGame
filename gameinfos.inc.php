@@ -13,16 +13,16 @@
 $gameinfos = array( 
 
 // Name of the game in English (will serve as the basis for translation) 
-'game_name' => "My Great Game",         
+'game_name' => "Qo",         
 
 // Game publisher (use empty string if there is no publisher)
-'publisher' => 'My Publishing Company',                     
+'publisher' => null,                     
 
 // Url of game publisher website
-'publisher_website' => 'http://www.mypublishingcompany.com/',   
+'publisher_website' => null,   
 
 // Board Game Geek ID of the publisher
-'publisher_bgg_id' => 1234,
+'publisher_bgg_id' => null,
 
 // Board game geek ID of the game
 'bgg_id' => 2389,
@@ -96,12 +96,6 @@ $gameinfos = array(
     //  maximum possible value: 740 (ie: your game interface should fit with a 740px width (correspond to a 1024px screen)
     //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
     'min' => 740,
-
-    // Maximum width
-    //  default: null (ie: no limit, the game interface is as big as the player's screen allows it).
-    //  maximum possible value: unlimited
-    //  minimum possible value: 740
-    'max' => null
 ),
 
 
