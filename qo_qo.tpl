@@ -29,29 +29,51 @@
             <div class="v-markers">I</div>
         </div>
     </div>
-    <div class="last-move-display-container" id="move-record">
+    <div class="last-move-display-container">
+        <div class="user-box-black">
+            <div class="pay-btn-container" id="active-black">
+                <div class="pay-btn-black"></div>
+            </div>
+            <div class="stone-box">
+                <div class="lodestone-black" id="lodestone-1"></div>
+                <div class="score-box-black">Captured: 
+                    <div class="score" id="score-1"></div>
+                </div>
+            </div>
+            <div class="last-move-slot-container">
+                <div class="last-move-label-black">Last: </div>
+                <div class="last-move-slot-box" id="move-record-black">
+                </div>
+            </div>
+        </div>
+        <div class="balance-slider">
+            <div class="slider-inner-container-black"></div>
+            <div class="slider-inner-container-black"></div>
+            <div class="slider-inner-container-black"></div>
+            <div class="slider-inner-container-black"></div>
+            <div class="slider-inner-container-white"></div>
+            <div class="slider-inner-container-white"></div>
+            <div class="slider-inner-container-white"></div>
+            <div class="slider-inner-container-white"></div>
+            <div class="slider"></div>
+        </div>
+        <div class="user-box-white">
+            <div class="pay-btn-container" id="active-white">
+                <div class="pay-btn-white"></div>
+            </div>
+            <div class="stone-box">
+                <div class="lodestone-white" id="lodestone-2"></div>
+                <div class="score-box-white">Captured: 
+                    <div class="score" id="score-2"></div>
+                </div>
+            </div>
+            <div class="last-move-slot-container">
+                <div class="last-move-label-white">Last: </div>
+                <div class="last-move-slot-box" id="move-record-white">
+                </div>
+            </div>
+        </div>
     </div> 
 </div>
-<div class="score-container">
-    <div class="score-inner-container">
-        <div class="name-black" id="player-name-1"></div>
-        <div class="tile-container">
-            <div class="score-tile score-black">
-                <div class="score" id="black-score">Lodestone: <span id="lodestone-1"><span></div>
-                <div class="score" id="black-score">Captured: <span id="score-1"><span></div>
-            </div>
-        </div>
-    </div>
-    <div class="score-inner-container">
-        <div class="name-white" id="player-name-2"></div>
-        <div class="tile-container">
-            <div class="score-tile score-white">
-                <div class="score" id="white-score">Lodestone: <span id="lodestone-2"><span></div>
-                <div class="score" id="white-score">Captured: <span id="score-2"><span></div>
-            </div>
-        </div>
-    </div>
-</div>
-
 
 {OVERALL_GAME_FOOTER}

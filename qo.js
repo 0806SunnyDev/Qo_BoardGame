@@ -39,8 +39,6 @@ function (dojo, declare, dom, html) {
 
             this.isSpectator = this.player_id === null || !(this.player_id in gamedatas.players);
 
-            const playerNameOne = document.getElementById('player-name-1');
-            const playerNameTwo = document.getElementById('player-name-2');
             const playerOneStone = document.getElementById('lodestone-1');
             const playerOneScore = document.getElementById('score-1');
             const playerTwoStone = document.getElementById('lodestone-2');
@@ -54,11 +52,9 @@ function (dojo, declare, dom, html) {
                 // console.log('player => ', player['id']);
 
                 if (player['color'] === '000000') {
-                    playerNameOne.insertAdjacentText('afterbegin', player['name'])
                     playerOneStone.insertAdjacentText('afterbegin', player['stone']);
                     playerOneScore.insertAdjacentText('afterbegin', player['score']);
                 } else {
-                    playerNameTwo.insertAdjacentText('afterbegin', player['name'])
                     playerTwoStone.insertAdjacentText('afterbegin', player['stone']);
                     playerTwoScore.insertAdjacentText('afterbegin', player['score']);
                 }
@@ -69,8 +65,8 @@ function (dojo, declare, dom, html) {
             // TODO: Set up your game interface here, according to "gamedatas"
             const board = document.getElementById('board');
             
-            const hor_scale = 78;
-            const ver_scale = 78;
+            const hor_scale = 62.4;
+            const ver_scale = 62.4;
             for (let x=1; x<=9; x++) {
                 for (let y=1; y<=9; y++) {
                     const left = Math.round((x - 1) * hor_scale);
@@ -91,23 +87,34 @@ function (dojo, declare, dom, html) {
             }
 
             if (gamedatas.record.length !== 0) {
-                const moveRecord = document.getElementById('move-record');
-
                 for (let i = 0; i < gamedatas.record.length; i++) {
                     const player_id = gamedatas.record[i]['player']
                     var player_color = gamedatas.players[player_id]['color'];
                     
-                    let className = "last-move-tile-white";
+                    var className = "last-move-tile-black";
+                    var idName = "move-record-black";
+                    var idActiveName = "active-white";
 
-                    if (player_color === "000000") {
-                        className = "last-move-tile-black";
+                    if (player_color === "ffffff") {
+                        className = "last-move-tile-white";
+                        idName = "move-record-white";
+                        idActiveName = "active-black";
                     }
-
-                    moveRecord.insertAdjacentHTML(
-                        `afterbegin`, 
-                        `<div class="last-move-slot"><div class="${className}"></div><div class="last-move-number">${gamedatas.record[i]['position']}</div></div>`
+        
+                    document.getElementById(idName).insertAdjacentHTML(
+                        `afterbegin`,
+                        `<div class="${className}">${gamedatas.record[i]['position']}</div>`
                     );
-                    
+
+                    // console.log(first)
+
+                    if (document.getElementById("active-player")) document.getElementById("active-player").remove();
+
+                    document.getElementById(idActiveName).insertAdjacentHTML(
+                        `beforeend`,
+                        `<div id="active-player"></div>`
+                    );
+
                 }
             }
 
@@ -476,13 +483,25 @@ function (dojo, declare, dom, html) {
 
             var move = position_y_arr[notif.args.y - 1] + notif.args.x;
             var className = "last-move-tile-black";
-            if (color === "ffffff") className = "last-move-tile-white"
+            var idName = "move-record-black";
+            var idActiveName = "active-white";
+            if (color === "ffffff") {
+                className = "last-move-tile-white";
+                idName = "move-record-white";
+                idActiveName = "active-black";
+            };
 
-            document.getElementById("move-record").insertAdjacentHTML(
+            document.getElementById(idName).insertAdjacentHTML(
                 `afterbegin`,
-                `<div class="last-move-slot"><div class="${className}"></div><div class="last-move-number">${move}</div></div>`
-            )
+                `<div class="${className}">${move}</div>`
+            );
 
+            document.getElementById("active-player").remove();
+
+            document.getElementById(idActiveName).insertAdjacentHTML(
+                `beforeend`,
+                `<div id="active-player"></div>`
+            );
         },
 
         notif_moveDisc: function( notif )
@@ -501,12 +520,24 @@ function (dojo, declare, dom, html) {
 
             var move = position_y_arr[notif.args.y - 1] + notif.args.x;
             var className = "last-move-tile-black";
-            if (color === "ffffff") className = "last-move-tile-white"
+            var idActiveName = "active-white";
+            if (color === "ffffff") {
+                className = "last-move-tile-white";
+                idName = "move-record-white";
+                idActiveName = "active-black";
+            };
 
-            document.getElementById("move-record").insertAdjacentHTML(
+            document.getElementById(idName).insertAdjacentHTML(
                 `afterbegin`,
-                `<div class="last-move-slot"><div class="${className}"></div><div class="last-move-number">${move}</div></div>`
-            )
+                `<div class="${className}">${move}</div>`
+            );
+
+            document.querySelector('#active-player').remove();
+
+            document.getElementById(idActiveName).insertAdjacentHTML(
+                `beforeend`,
+                `<div id="active-player"></div>`
+            );
 
         },
 

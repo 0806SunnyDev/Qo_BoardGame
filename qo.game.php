@@ -170,10 +170,7 @@ class Qo extends Table
         if( $board[ $x ][ $y ] === null ) // If there is already a disc on this place, this can't be a valid move
         {
             // For each directions...
-            $directions = array(
-                array( -1,-1 ), array( -1,0 ), array( -1, 1 ), array( 0, -1),
-                array( 0,1 ), array( 1,-1), array( 1,0 ), array( 1, 1 )
-            );
+            $directions = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
             $mayBeTurnedOver = [];
             
             foreach( $directions as $direction )
@@ -213,7 +210,9 @@ class Qo extends Table
 
                 if (count($mayBeTurnedOver) == $stoneCountLimit) {
                     $turnedOverDiscs=array_merge($turnedOverDiscs, $mayBeTurnedOver);
-                } else $mayBeTurnedOver = [];
+                }
+                
+                $mayBeTurnedOver = [];
             } 
         }
         return $turnedOverDiscs;
@@ -334,9 +333,16 @@ class Qo extends Table
             $newScores = $this->getCollectionFromDb( "SELECT player_id, player_score FROM player", true );
             $newStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
             $newColors = $this->getCollectionFromDb( "SELECT player_id, player_color FROM player", true );
+            $v_posArr = ["A","B","C","D","E","F","G","H","I"];
         
             if ($moveFlag) {
-                $this->notifyAllPlayers( "moveDisc", clienttranslate( '${player_name} moves a lodestone and captured ${returned_nbr} lodestone(s)' ), array(
+                $firstPos = $v_posArr[intval(strval($x)[1])-1] . intval(strval($x)[0]);
+                $secondPos = "" . $v_posArr[intval($clickY)-1] . $clickX;
+
+                $msg = '${player_name} moves ' . $firstPos . ' to ' . $secondPos;
+                if (count( $turnedOverDiscs )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
+                
+                $this->notifyAllPlayers( "moveDisc", clienttranslate( $msg ), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'returned_nbr' => count( $turnedOverDiscs ),
@@ -347,7 +353,12 @@ class Qo extends Table
                     'y' => $clickY
                 ) );
             } else {
-                $this->notifyAllPlayers( "playDisc", clienttranslate( '${player_name} plays a lodestone and captured ${returned_nbr} lodestone(s)' ), array(
+                $pos = "" . $v_posArr[intval($clickY)-1] . $clickX;
+
+                $msg = '${player_name} places a lodestone at ' . $pos;
+                if (count( $turnedOverDiscs )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
+
+                $this->notifyAllPlayers( "playDisc", clienttranslate( $msg ), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
                     'returned_nbr' => count( $turnedOverDiscs ),
