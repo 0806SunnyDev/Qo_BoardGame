@@ -91,7 +91,8 @@
     line-height: 30px;
     position: absolute;
     display: flex;
-    width: 675px;
+    width: 700px;
+    left: 15px;
     box-sizing: border-box;
     height: 30px;
     top: 0;
@@ -112,8 +113,8 @@
     display: flex;
     width: 32px;
     box-sizing: border-box;
-    height: 675px;
-    top: 29px;
+    height: 700px;
+    top: 15px;
     left: -1px;
     flex-direction: column;
     flex-wrap: nowrap;

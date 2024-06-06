@@ -154,6 +154,10 @@ class GameQo extends Table
     //  or a void array if no disc is returned (invalid move)
     function getTurnedOverDiscs( int $x, int $y, int $player, array $board ): array
     {
+        $colors = $this->getCollectionFromDb( "SELECT player_id, player_color FROM player", true );
+        $playerColor = $colors[$player];
+        $stoneCountLimit = ($playerColor == "000000") ? 4 : 3;
+        
         $turnedOverDiscs = [];
         
         if( $board[ $x ][ $y ] === null ) // If there is already a disc on this place, this can't be a valid move
@@ -196,7 +200,7 @@ class GameQo extends Table
                     }
                 }
 
-                if (count($mayBeTurnedOver) > 0) {
+                if (count($mayBeTurnedOver) == $stoneCountLimit) {
                     $turnedOverDiscs = $mayBeTurnedOver;
                 }
             } 
@@ -237,93 +241,128 @@ class GameQo extends Table
 
     function playDisc( int $x, int $y, $advanceState = true )
     {
+        $moveFlag = false;
+        $clickX = $x;
+        $clickY = $y;
+        $count = 0;
         // Check that this player is active and that this action is possible at this moment
         $this->checkAction( 'playDisc' );  
-        
+            
         $player_id = intval($this->getActivePlayerId()); 
-
         $positionArr = array(1 => 'A', 2 => 'B', 3 => 'C', 4 => 'D', 5 => 'E', 6 => 'F', 7 => 'G', 8 => 'H', 9 => 'I');
-        // Now, check if this is a possible move
         $board = $this->getBoard();
-        $turnedOverDiscs = $this->getTurnedOverDiscs( $x, $y, $player_id, $board );
 
+        if (strlen($x) == 2) {
+            $moveFlag = true;
+            $selectedX = intval(strval($x)[0]);
+            $selectedY = intval(strval($x)[1]);
+            $clickX = intval(strval($y)[0]);
+            $clickY = intval(strval($y)[1]);
+
+            if ($selectedX==$clickX) $count = abs($selectedY-$clickY);
+            else $count = abs($selectedX-$clickX);
+
+            $sql = "UPDATE board SET board_player=NULL
+                    WHERE board_x='$selectedX' AND board_y='$selectedY'";
+
+            $this->DbQuery( $sql );
+
+        }
+
+        // Now, check if this is a possible move
+        $turnedOverDiscs = $this->getTurnedOverDiscs( $clickX, $clickY, $player_id, $board );
+        
         // Let's place a disc at x,y and return all "$returned" discs to the active player
         $sql = "UPDATE board SET board_player='$player_id'
-                WHERE board_x='$x' AND board_y='$y'";
-
+                    WHERE board_x='$clickX' AND board_y='$clickY'";
         $this->DbQuery( $sql );
 
-        $sql = "UPDATE player SET player_stone = player_stone - 1 WHERE player_id='$player_id'";
+        $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $player_id . "', '" . $positionArr[$clickY] . $clickX . "')";
         $this->DbQuery( $sql );
 
-        $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $player_id . "', '" . $positionArr[$y] . $x . "')";
+        $lostStone = $count*2;
+
+        if (strlen($x) == 1) $sql = "UPDATE player SET player_stone = player_stone - 1 WHERE player_id='$player_id'";
+        else $sql = "UPDATE player SET player_stone = player_stone - '$lostStone' WHERE player_id='$player_id'";
         $this->DbQuery( $sql );
-        
-        if( count( $turnedOverDiscs ) > 0 )
-        {
-            if (count($turnedOverDiscs) === 1) {
-                $sql = "UPDATE board SET board_player=NULL
-                        WHERE board_x=" . $turnedOverDiscs[0]['x'] . " AND board_y=" . $turnedOverDiscs[0]['y'];
-            } else {
-                $sql = "UPDATE board SET board_player=NULL WHERE ( board_x, board_y) IN ( ";
-                
-                foreach( $turnedOverDiscs as $turnedOver )
-                {
-                    $sql .= "('" . $turnedOver['x'] . "', '" . $turnedOver['y'] . "'),";
-                }
-                $sql = substr( $sql, 0, -1) . " )";
-            }
+
+            if( count( $turnedOverDiscs ) > 0 )
+            {
+                if (count($turnedOverDiscs) === 1) {
+                    $sql = "UPDATE board SET board_player=NULL
+                            WHERE board_x=" . $turnedOverDiscs[0]['x'] . " AND board_y=" . $turnedOverDiscs[0]['y'];
+                } else {
+                    $sql = "UPDATE board SET board_player=NULL WHERE ( board_x, board_y) IN ( ";
                     
-            $this->DbQuery( $sql );
+                    foreach( $turnedOverDiscs as $turnedOver )
+                    {
+                        $sql .= "('" . $turnedOver['x'] . "', '" . $turnedOver['y'] . "'),";
+                    }
+                    $sql = substr( $sql, 0, -1) . " )";
+                }
+                        
+                $this->DbQuery( $sql );
+                
+                // Update scores according to the number of disc on board
+                $sql = "UPDATE player
+                        SET player_score = player_score + " . count( $turnedOverDiscs );
+                $sql .= " WHERE player_id='$player_id'";
+                $this->DbQuery( $sql );
+            }
+                
+            // Statistics
+            $this->incStat( count( $turnedOverDiscs ), "turnedOver", $player_id );
+            if( ($clickX==1 && $clickY==1) || ($clickX==9 && $clickY==1) || ($clickX==1 && $clickY==9) || ($clickX==9 && $clickY==9) )
+                $this->incStat( 1, 'discPlayedOnCorner', $player_id );
+            else if( $clickX==1 || $clickX==9 || $clickY==1 || $clickY==9 )
+                $this->incStat( 1, 'discPlayedOnBorder', $player_id );
+            else if( $clickX>=3 && $clickX<=7 && $clickY>=3 && $clickY<=7 )
+                $this->incStat( 1, 'discPlayedOnCenter', $player_id );
             
-            // Update scores according to the number of disc on board
-            $sql = "UPDATE player
-                    SET player_score = player_score + " . count( $turnedOverDiscs );
-            $sql .= " WHERE player_id='$player_id'";
-            $this->DbQuery( $sql );
-        }
+            // Notify
+            $newScores = $this->getCollectionFromDb( "SELECT player_id, player_score FROM player", true );
+            $newStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
+            $newColors = $this->getCollectionFromDb( "SELECT player_id, player_color FROM player", true );
+        
+            if ($moveFlag) {
+                $this->notifyAllPlayers( "moveDisc", clienttranslate( '${player_name} moves a lodestone and captured ${returned_nbr} lodestone(s)' ), array(
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'returned_nbr' => count( $turnedOverDiscs ),
+                    'colors' => $newColors,
+                    'beforeX' => intval(strval($x)[0]),
+                    'beforeY' => intval(strval($x)[1]),
+                    'x' => $clickX,
+                    'y' => $clickY
+                ) );
+            } else {
+                $this->notifyAllPlayers( "playDisc", clienttranslate( '${player_name} plays a lodestone and captured ${returned_nbr} lodestone(s)' ), array(
+                    'player_id' => $player_id,
+                    'player_name' => $this->getActivePlayerName(),
+                    'returned_nbr' => count( $turnedOverDiscs ),
+                    'colors' => $newColors,
+                    'x' => $clickX,
+                    'y' => $clickY
+                ) );
+            };
+
+            $this->notifyAllPlayers( "turnOverDiscs", '', array(
+                'player_id' => $player_id,
+                'turnedOver' => $turnedOverDiscs
+            ) );
             
-        // Statistics
-        $this->incStat( count( $turnedOverDiscs ), "turnedOver", $player_id );
-        if( ($x==1 && $y==1) || ($x==9 && $y==1) || ($x==1 && $y==9) || ($x==9 && $y==9) )
-            $this->incStat( 1, 'discPlayedOnCorner', $player_id );
-        else if( $x==1 || $x==9 || $y==1 || $y==9 )
-            $this->incStat( 1, 'discPlayedOnBorder', $player_id );
-        else if( $x>=3 && $x<=7 && $y>=3 && $y<=7 )
-            $this->incStat( 1, 'discPlayedOnCenter', $player_id );
-        
-        // Notify
-        $newScores = $this->getCollectionFromDb( "SELECT player_id, player_score FROM player", true );
-        $newStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
-        $newColors = $this->getCollectionFromDb( "SELECT player_id, player_color FROM player", true );
-        
-        $this->notifyAllPlayers( "playDisc", clienttranslate( '${player_name} plays a lodestone and captured ${returned_nbr} lodestone(s)' ), array(
-            'player_id' => $player_id,
-            'player_name' => $this->getActivePlayerName(),
-            'returned_nbr' => count( $turnedOverDiscs ),
-            'colors' => $newColors,
-            'x' => $x,
-            'y' => $y
-        ) );
+            $this->notifyAllPlayers( "newScores", "", array(
+                "scores" => $newScores,
+                "stones" => $newStones,
+                "colors" => $newColors,
+            ) );
 
-        $this->notifyAllPlayers( "turnOverDiscs", '', array(
-            'player_id' => $player_id,
-            'turnedOver' => $turnedOverDiscs
-        ) );
-        
-        $this->notifyAllPlayers( "newScores", "", array(
-            "scores" => $newScores,
-            "stones" => $newStones,
-            "colors" => $newColors,
-        ) );
-
-        // Advance game state if specified
-        if ($advanceState) {
-            $this->gamestate->nextState( 'playDisc' );
-        }
+            // Advance game state if specified
+            if ($advanceState) {
+                $this->gamestate->nextState( 'playDisc' );
+            }
     }
 
-    
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
 ////////////
@@ -370,10 +409,10 @@ class GameQo extends Table
 
         for ($i=1; $i <= 9; $i++) { 
             for ($j=1; $j <= 9; $j++) { 
-                if($board[$i][$j] != $player_id) {
+                if($board[$i][$j] != $active_player_id) {
                     $v_flag = 2;
                 }
-                if($board[$j][$i] != $player_id) {
+                if($board[$j][$i] != $active_player_id) {
                     $h_flag = 2;
                 }
             }
@@ -432,7 +471,7 @@ class GameQo extends Table
         if ($state['type'] === "activeplayer") {
             // Handle zombie turn for active player state
             // Place a lodestone in any empty place on the board
-            $this->placeRandomLodestone();
+            $this->placeRandomLodestone($active_player);
             $this->gamestate->nextState("zombiePass");
             return;
         }
@@ -456,19 +495,65 @@ class GameQo extends Table
         return ($is_zombie == 1);
     }
 
-    function placeRandomLodestone()
+    function placeRandomLodestone($player)
     {
         // Get all possible empty places on the board
+        $board = $this->getBoard();
         $empty_places = $this->getEmptyPlaces();
+        $placed_places = $this->getPlacedPlaces($player);
+        $possiblity = true;
+        $x = 0;
+        $y = 0;
 
-        // Choose a random empty place
-        $random_index = array_rand($empty_places);
-        $random_place = $empty_places[$random_index];
+        $rand_flag = rand(0, 1);
 
-        // Place a lodestone in the random empty place
-        $x = $random_place['x'];
-        $y = $random_place['y'];
-        $this->playDisc($x, $y, false); // Call playDisc() without advancing game state
+        if ($rand_flag == 0) {
+            $random_index = array_rand($empty_places);
+            $random_place = $empty_places[$random_index];
+
+            $x = $random_place['x'];
+            $y = $random_place['y'];
+
+            $possiblity = true;
+        } else {
+            $random_index = array_rand($placed_places);
+            $random_place = $placed_places[$random_index];
+
+            $random_target_index = array_rand($empty_places);
+            $random_target_place = $empty_places[$random_target_index];
+
+            $selectedX = $random_place['x'];
+            $selectedY = $random_place['y'];
+            $targetX = $random_target_place['x'];
+            $targetY = $random_target_place['y'];
+
+            $x = "" . $selectedX . $selectedY;
+            $y = "" . $targetX . $targetY;
+
+            if ($selectedX == $targetX) {
+                $i=($selectedY>$targetY)?$targetY:$selectedY;
+                $j=($selectedY<$targetY)?$targetY:$selectedY;
+
+                for ($k=$i+1; $k < $j; $k++) { 
+                    if ($board[$selectedX][$k] !== null) $possiblity = false;
+                }
+            } else if ($selectedY == $targetY) {
+                $i=($selectedX>$targetX)?$targetX:$selectedX;
+                $j=($selectedX<$targetX)?$targetX:$selectedX;
+
+                for ($k=$i+1; $k < $j; $k++) { 
+                    if ($board[$k][$selectedY] !== null) $possiblity = false;
+                }
+            } else {
+                $possiblity = false;
+            };
+            
+        };
+
+        // // Place a lodestone in the random empty place
+        
+        if ($possiblity) $this->playDisc($x, $y, false); // Call playDisc() without advancing game state
+        else $this->placeRandomLodestone($player);
     }
 
     function getEmptyPlaces()
@@ -483,6 +568,20 @@ class GameQo extends Table
             }
         }
         return $empty_places;
+    }
+
+    function getPlacedPlaces($player)
+    {
+        $placed_places = [];
+        $board = $this->getBoard();
+        for ($x = 1; $x <= 9; $x++) {
+            for ($y = 1; $y <= 9; $y++) {
+                if ($board[$x][$y] == $player) {
+                    $placed_places[] = array('x' => $x, 'y' => $y);
+                }
+            }
+        }
+        return $placed_places;
     }
     
 ///////////////////////////////////////////////////////////////////////////////////:

@@ -24,6 +24,10 @@ function (dojo, declare, dom, html) {
     return declare("bgagame.gameqo", ebg.core.gamegui, {
         constructor: function(){
             console.log('gameqo constructor');
+
+            this.boardData = [];
+            this.playEvtFlag = 1;
+            this.beforeClickPos = 0;
               
             // Here, you can init the global variables of your user interface
             // Example:
@@ -46,8 +50,11 @@ function (dojo, declare, dom, html) {
         
         setup: function( gamedatas )
         {
-            console.log( "Starting creating player boards" );
-            console.log(gamedatas)
+            console.log( "Starting creating player boards => ", gamedatas );
+
+            this.boardData = gamedatas.board;
+
+            this.isSpectator = this.player_id === null || !(this.player_id in gamedatas.players);
 
             const playerNameOne = document.getElementById('player-name-1');
             const playerNameTwo = document.getElementById('player-name-2');
@@ -123,7 +130,9 @@ function (dojo, declare, dom, html) {
 
             // this.addDiscOnBoard( 2, 3, this.player_id );
 
-            document.querySelectorAll('.square').forEach(square => square.addEventListener('click', e => this.onPlayDisc(e)));
+            if (!this.isSpectator) {
+                document.querySelectorAll('.square').forEach(square => square.addEventListener('click', e => this.onPlayDisc(e)));
+            }
             
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -145,7 +154,7 @@ function (dojo, declare, dom, html) {
             switch( stateName )
             {
             case 'playerTurn':
-                this.updatePossibleMoves( args.args.possibleMoves );
+                if (!this.isSpectator) this.updatePossibleMoves( args.args.possibleMoves );
                 break;
             }
         },
@@ -183,7 +192,7 @@ function (dojo, declare, dom, html) {
         {
             console.log( 'onUpdateActionButtons: '+stateName );
                       
-            if( this.isCurrentPlayerActive() )
+            if( this.isCurrentPlayerActive() && !this.isSpectator )
             {            
                 switch( stateName )
                 {
@@ -211,6 +220,39 @@ function (dojo, declare, dom, html) {
             
             this.placeOnObject( `disc_${x}${y}`, 'overall_player_board_'+player );
             this.slideToObject( `disc_${x}${y}`, 'square_'+x+'_'+y ).play();
+
+            if (!this.isSpectator) {
+                document.querySelectorAll('.disc').forEach(square => square.addEventListener('click', e => this.onPlayDisc(e)));
+            }
+        },
+
+        moveDiscOnBoard: function(beforeX, beforeY, x, y, player_id) {
+            var disc = document.getElementById(`disc_${beforeX}${beforeY}`);
+            var target = document.getElementById('discs');
+            var targetSquare = document.getElementById(`square_${x}_${y}`);
+            var targetX = parseInt(targetSquare.style.left);
+            var targetY = parseInt(targetSquare.style.top);
+        
+            // Animate the movement of the disc
+            dojo.animateProperty({
+                node: disc,
+                duration: 500, // Animation duration in milliseconds
+                properties: {
+                    left: { start: parseInt(disc.style.left), end: targetX },
+                    top: { start: parseInt(disc.style.top), end: targetY }
+                },
+                onEnd: function() {
+                    // After animation, move the disc to the new position
+                    dojo.style(disc, "left", targetX + "px");
+                    dojo.style(disc, "top", targetY + "px");
+        
+                    // Ensure the disc is positioned correctly in the DOM hierarchy
+                    dojo.place(disc, target, "last");
+        
+                    // Update the ID of the disc to reflect its new position
+                    disc.id = `disc_${x}${y}`;
+                }
+            }).play();
         },
 
         updatePossibleMoves: function( possibleMoves )
@@ -232,6 +274,7 @@ function (dojo, declare, dom, html) {
 
         onPlayDisc: function( evt )
         {
+            
             // Stop this event propagation
             evt.preventDefault();
             evt.stopPropagation();
@@ -239,21 +282,110 @@ function (dojo, declare, dom, html) {
             // Get the cliqued square x and y
             // Note: square id format is "square_X_Y"
             var coords = evt.currentTarget.id.split('_');
-            var x = coords[1];
-            var y = coords[2];
-
-            if(!document.getElementById(`square_${x}_${y}`).classList.contains('possibleMove')) {
-                // This is not a possible move => the click does nothing
-                return ;
-            }
+            // var stoneColor = evt.currentTarget.data-color;
+            var x,y;
+            var afterPos;
             
-            if( this.checkAction( 'playDisc' ) )    // Check that this action is possible at this moment
-            {            
-                this.ajaxcall( "/gameqo/gameqo/playDisc.html", {
-                    x:x,
-                    y:y
-                }, this, function( result ) {} );
+            if (coords[0] === "square" && this.playEvtFlag === 1) {
+                x = coords[1];
+                y = coords[2];
+
+                if(!document.getElementById(`square_${x}_${y}`).classList.contains('possibleMove')) {
+                    // This is not a possible move => the click does nothing
+                    return ;
+                }
+
+                if( this.checkAction( 'playDisc' ) )    // Check that this action is possible at this moment
+                {            
+                    this.ajaxcall( "/gameqo/gameqo/playDisc.html", {
+                        x:x,
+                        y:y,
+                    }, this, function( result ) {} );
+                }
+            } else if (coords[0] !== "square") {
+                var playerId = this.gamedatas.playerorder[0];
+                var playerColor = this.gamedatas.players[ playerId ].color;
+                var stoneColor = evt.currentTarget.getAttribute('data-color');
+
+                if (playerColor == stoneColor) {
+                    this.beforeClickPos = coords[1];
+                    this.playEvtFlag = 2;
+
+                    // Get all elements with the class name 'disc'
+                    var elements = document.getElementsByClassName('disc');
+
+                    // Loop through each element and set the opacity to 1
+                    for (let i = 0; i < elements.length; i++) {
+                        elements[i].style.opacity = 1;
+                    }
+
+                    document.getElementById(`disc_${this.beforeClickPos}`).style.opacity = 0.7;
+                } else console.log("This is not your stone")
+                // } else {
+                //     console.log('second')
+                //     // Get all elements with the class name 'disc'
+                //     var elements = document.getElementsByClassName('disc');
+
+                //     // Loop through each element and set the opacity to 1
+                //     for (let i = 0; i < elements.length; i++) {
+                //         elements[i].style.opacity = 1;
+                //     }
+
+                //     this.playEvtFlag = 1;
+                // }
+            } else {
+                afterPos = "" + coords[1] + coords[2];
+                var beforePos = this.beforeClickPos;
+                var possiblity = true;
+
+                if (parseInt(beforePos[0]) === parseInt(coords[1]) ) {
+                    var arr = this.boardData.filter( item => item.x == coords[1]);
+
+                    var i = (parseInt(beforePos[1]) > parseInt(coords[2])) ? parseInt(beforePos[1]) : parseInt(coords[2]);
+                    var j = (parseInt(beforePos[1]) < parseInt(coords[2])) ? parseInt(beforePos[1]) : parseInt(coords[2]);
+
+                    for (var k = j+1; k < i; k++) {
+                        for (var l = 0; l < arr.length; l++) {
+                            if (parseInt(arr[l].y) === k) possiblity = false;
+                        }
+                    }
+                    
+                } else if (parseInt(beforePos[1]) === parseInt(coords[2])) {
+                    var arr = this.boardData.filter( item => item.y == coords[2]);
+
+                    var i = (parseInt(beforePos[0]) > parseInt(coords[1])) ? parseInt(beforePos[0]) : parseInt(coords[1]);
+                    var j = (parseInt(beforePos[0]) < parseInt(coords[1])) ? parseInt(beforePos[0]) : parseInt(coords[1]);
+
+                    for (var k = j+1; k < i; k++) {
+                        for (var l = 0; l < arr.length; l++) {
+                            if (parseInt(arr[l].x) === k) possiblity = false;
+                        }
+                    }
+                } else {
+                    possiblity = false;
+                }
+
+                if( this.checkAction( 'playDisc' ) && possiblity )    // Check that this action is possible at this moment
+                {            
+                    this.ajaxcall( "/gameqo/gameqo/playDisc.html", {
+                            x:beforePos,
+                            y:afterPos,
+                    }, this, function( result ) { console.log("result => ", result)} );
+                } else {
+                    console.log("Impossible Move")
+                }
+
+                var elements = document.getElementsByClassName('disc');
+
+                // Loop through each element and set the opacity to 1
+                for (let i = 0; i < elements.length; i++) {
+                    elements[i].style.opacity = 1;
+                }
+
+                this.playEvtFlag = 1;
             }
+
+            
         },
 
         ///////////////////////////////////////////////////
@@ -333,6 +465,7 @@ function (dojo, declare, dom, html) {
             console.log( 'notifications subscriptions setup' );
 
             const notifs = [
+                ['moveDisc', 500],
                 ['playDisc', 500],
                 ['turnOverDiscs', 1500],
                 ['newScores', 1],
@@ -350,6 +483,33 @@ function (dojo, declare, dom, html) {
             document.querySelectorAll('.possibleMove').forEach(div => div.classList.remove('possibleMove'));
         
             this.addDiscOnBoard( notif.args.x, notif.args.y, notif.args.player_id );
+            
+            this.boardData = this.boardData.concat({ x: `${notif.args.x}`, y: `${notif.args.y}`, player: `${notif.args.player_id}` });
+
+            var color = notif.args.colors[ notif.args.player_id ];
+
+            var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+
+            var move = position_y_arr[notif.args.y - 1] + notif.args.x;
+            var className = "last-move-tile-black";
+            if (color === "ffffff") className = "last-move-tile-white"
+
+            document.getElementById("move-record").insertAdjacentHTML(
+                `afterbegin`,
+                `<div class="last-move-slot"><div class="${className}"></div><div class="last-move-number">${move}</div></div>`
+            )
+
+        },
+
+        notif_moveDisc: function( notif )
+        {
+            // Remove current possible moves (makes the board more clear)
+            document.querySelectorAll('.possibleMove').forEach(div => div.classList.remove('possibleMove'));
+
+            this.moveDiscOnBoard( notif.args.beforeX, notif.args.beforeY, notif.args.x, notif.args.y, notif.args.player_id );
+            
+            this.boardData = this.boardData.filter( item => item.x != notif.args.beforeX && item.y != notif.args.beforeY );
+            this.boardData = this.boardData.concat({ x: `${notif.args.x}`, y: `${notif.args.y}`, player: `${notif.args.player_id}` });
 
             var color = notif.args.colors[ notif.args.player_id ];
 
@@ -367,10 +527,13 @@ function (dojo, declare, dom, html) {
         },
 
         notif_turnOverDiscs: function(notif) {
+
             // Make these discs blink and then remove them
             for (var i in notif.args.turnedOver) {
                 var disc = notif.args.turnedOver[i];
                 
+                this.boardData = this.boardData.filter( item => item.x != disc.x && item.y != disc.y );
+
                 // Make the disc blink once and then remove it
                 var anim = dojo.fx.chain([
                     dojo.fadeOut({ node: 'disc_' + disc.x + '' + disc.y }),
