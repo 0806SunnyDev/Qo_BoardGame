@@ -2,15 +2,12 @@ html {
     background-image: url("img/background.jpg");
     }
     
-body {
-    font-family: 'Indie Flower', cursive !important;
-}
-
 #main-container {
     width: 100%;
     height: 600px;
     display: flex;
     justify-content: center;
+    font-family: 'Indie Flower', cursive !important;
 }
 
 #board-frame {
@@ -179,13 +176,13 @@ body {
 .slider-inner-container-black {
     border-top: 3px solid black;
     height: 32px;
-    background: linear-gradient(to right, #e0d2b5, #e0d2b5, white, #e0d2b5, #e0d2b5);
+    background: linear-gradient(to right, #e0d2b5, #e0d2b5, #e0d2b5, white, #e0d2b5, #e0d2b5, #e0d2b5);
 }
 
 .slider-inner-container-white {
     border-bottom: 3px solid white;
     height: 32px;
-    background: linear-gradient(to right, #e0d2b5, #e0d2b5, black, #e0d2b5, #e0d2b5);
+    background: linear-gradient(to right, #e0d2b5, #e0d2b5, #e0d2b5, black, #e0d2b5, #e0d2b5, #e0d2b5);
 }
 
 .slider {
@@ -404,4 +401,29 @@ body {
     background-image: url(img/active.png);
     position: relative;
     animation: fadein 1s forwards;
+}
+
+.dark-shroud {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid black;
+    width: 100%;
+    top: 0;
+    left: 0;
+    padding-bottom: 100%;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.win-lose-draw {
+    position: fixed;
+    left: 50%;
+    top: 20%;
+    transform: translate(-50%, -50%);
+    color: #ffca00;
+    width: 100%;
+    text-align: center;
+    font-size: 70px;
+    text-shadow: 1px 1px 1px #856900, 1px 2px 1px #856900, 1px 3px 1px #856900, 1px 4px 1px #856900, 1px 5px 1px #856900, 1px 6px 1px #856900, 1px 7px 1px #856900, 1px 8px 1px #856900, 1px 9px 1px #856900, 1px 10px 1px #856900, 1px 18px 6px rgba(16, 16, 16, 0.4), 1px 22px 10px rgba(16, 16, 16, 0.2), 1px 25px 35px rgba(16, 16, 16, 0.2), 1px 30px 60px rgba(16, 16, 16, 0.4);
+    opacity: 0;
 }

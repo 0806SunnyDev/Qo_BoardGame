@@ -75,5 +75,8 @@
         </div>
     </div> 
 </div>
+<div class="dark-shroud">
+    <div class="win-lose-draw" id="message"></div>
+</div>
 
 {OVERALL_GAME_FOOTER}

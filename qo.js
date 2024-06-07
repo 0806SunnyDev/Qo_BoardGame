@@ -378,7 +378,7 @@ function (dojo, declare, dom, html) {
 
             
         },
-
+        
         ///////////////////////////////////////////////////
         //// Utility methods
         
@@ -496,7 +496,7 @@ function (dojo, declare, dom, html) {
                 `<div class="${className}">${move}</div>`
             );
 
-            document.getElementById("active-player").remove();
+            if(document.getElementById("active-player")) document.getElementById("active-player").remove();
 
             document.getElementById(idActiveName).insertAdjacentHTML(
                 `beforeend`,
@@ -589,6 +589,19 @@ function (dojo, declare, dom, html) {
             }
 
 
-        }
+        },
+
+        // notif_finalScores: function( notif )
+        // {
+        //     console.log("Game Over");
+        //     var msg = `Game Over!<br>The winner is ${notif.args.winner_name} with ${notif.args.winner_score} points. The score of ${notif.args.loser_name} is ${notif.args.loser_score}`
+
+        //     if (notif.args.winner_score === notif.args.loser_score) {
+        //         msg = `Game Over!<br>The score of two players are the same. The score is ${notif.args.winner_score}.`;
+        //     }
+
+        //     if (document.getElementById("message")) document.getElementById("message").remove();
+        //     document.getElementById("message").insertAdjacentHTML(msg);
+        // }
    });             
 });
