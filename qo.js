@@ -80,6 +80,7 @@ function (dojo, declare, dom, html) {
             {
                 var square = gamedatas.board[i];
                 
+                
                 if( square.player !== null )
                 {
                     this.addDiscOnBoard( square.x, square.y, square.player );
