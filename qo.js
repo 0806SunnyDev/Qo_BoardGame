@@ -520,6 +520,7 @@ function (dojo, declare, dom, html) {
 
             var move = position_y_arr[notif.args.y - 1] + notif.args.x;
             var className = "last-move-tile-black";
+            var idName = "move-record-black";
             var idActiveName = "active-white";
             if (color === "ffffff") {
                 className = "last-move-tile-white";
@@ -544,25 +545,29 @@ function (dojo, declare, dom, html) {
         notif_turnOverDiscs: function(notif) {
 
             // Make these discs blink and then remove them
-            for (var i in notif.args.turnedOver) {
-                var disc = notif.args.turnedOver[i];
-                
-                this.boardData = this.boardData.filter( item => item.x != disc.x && item.y != disc.y );
-
-                // Make the disc blink once and then remove it
-                var anim = dojo.fx.chain([
-                    dojo.fadeOut({ node: 'disc_' + disc.x + '' + disc.y }),
-                    dojo.fadeIn({ node: 'disc_' + disc.x + '' + disc.y }),
-                    dojo.fadeOut({ 
-                        node: 'disc_' + disc.x + '' + disc.y,
-                        onEnd: function(node){
-                            dojo.destroy(node); // Remove the DOM element after animation
-                        }
-                    })
-                ]); // end of dojo.fx.chain
-        
-                // ... and launch the animation
-                anim.play();
+            var turnedOverDiscs = notif.args.turnedOver;
+            console.log("#### turnedoverdisc => ", turnedOverDiscs);
+            for (let j = 0; j < turnedOverDiscs.length; j++) {
+                for (var i in turnedOverDiscs[j]) {
+                    var disc = turnedOverDiscs[j][i];
+                    
+                    this.boardData = this.boardData.filter( item => item.x != disc.x && item.y != disc.y );
+    
+                    // Make the disc blink once and then remove it
+                    var anim = dojo.fx.chain([
+                        dojo.fadeOut({ node: 'disc_' + disc.x + '' + disc.y }),
+                        dojo.fadeIn({ node: 'disc_' + disc.x + '' + disc.y }),
+                        dojo.fadeOut({ 
+                            node: 'disc_' + disc.x + '' + disc.y,
+                            onEnd: function(node){
+                                dojo.destroy(node); // Remove the DOM element after animation
+                            }
+                        })
+                    ]); // end of dojo.fx.chain
+            
+                    // ... and launch the animation
+                    anim.play();
+                }
             }
         },
 
