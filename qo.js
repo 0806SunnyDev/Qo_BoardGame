@@ -77,6 +77,7 @@ function (dojo, declare, dom, html) {
             }
             
 
+
             for( var i in gamedatas.board )
             {
                 var square = gamedatas.board[i];
