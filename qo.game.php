@@ -163,57 +163,297 @@ class Qo extends Table
     {
         $colors = $this->getCollectionFromDb( "SELECT player_id, player_color FROM player", true );
         $playerColor = $colors[$player];
-        $stoneCountLimit = ($playerColor == "000000") ? 4 : 3;
+        $oppStoneCountLimit = ($playerColor == "000000") ? 4 : 3;
+        $playerStoneCountLimit = ($playerColor == "000000") ? 3 : 4;
         
         $turnedOverDiscs = [];
-        
-        if( $board[ $x ][ $y ] === null ) // If there is already a disc on this place, this can't be a valid move
+        $turnedOverDiscs[0] = [];
+        $turnedOverDiscs[1] = [];
+
+        if( $board[$x][$y] === NULL ) // If there is already a disc on this place, this can't be a valid move
         {
-            // For each directions...
-            $directions = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-            $mayBeTurnedOver = [];
-            
-            foreach( $directions as $direction )
-            {
-                // Starting from the square we want to place a disc...
-                $current_x = $x;
-                $current_y = $y;
-                $mayBeTurnedOverDisc = [];
-                $bContinue = true;
-                $flag = false;
+            $board[$x][$y] = "" . $player;
 
-                while( $bContinue )
-                {
-                    // Go to the next square in this direction
-                    $current_x += $direction[0];
-                    $current_y += $direction[1];
-                    
-                    if( $current_x<1 || $current_x>9 || $current_y<1 || $current_y>9 ) {
-                        $bContinue = false; // Out of the board => stop here for this direction
-                    }
-                    else if( $board[ $current_x ][ $current_y ] === null )
-                    {
-                        if ( $flag ) $mayBeTurnedOver = [];
-                        $bContinue = false; // An empty square => stop here for this direction
-                    }
-                    else if( $board[ $current_x ][ $current_y ] == $player )
-                    {
-                        $bContinue = false;
-                    }
-                    else if( $board[ $current_x ][ $current_y ] != $player )
-                    {
-                        $flag = true;
-                        $mayBeTurnedOverDisc = array( 'x' => $current_x, 'y' => $current_y );
-                        $mayBeTurnedOver[] = $mayBeTurnedOverDisc;
+            $mayBeTurnedHorizonPlayerDisc = [];
+            $mayBeTurnedHorizonOppDisc = [];
+            $mayBeTurnedVerticalPlayerDisc = [];
+            $mayBeTurnedVerticalOppDisc = [];
+            $mayBeTurnedDiagonOnePlayerDisc = [];
+            $mayBeTurnedDiagonOneOppDisc = [];
+            $mayBeTurnedDiagonTwoPlayerDisc = [];
+            $mayBeTurnedDiagonTwoOppDisc = [];
+
+            for ($i=1; $i<=9; $i++) { 
+                for ($j=1; $j<=9; $j++) {
+                    // vertical check
+                    if ($board[$j][$i]==$player) {
+                        if ($j===1) {
+                            $mayBeTurnedVerticalPlayerDisc = [];
+                            $mayBeTurnedVerticalPlayerDisc[] = ['x'=>$j, 'y'=>$i];
+                        } elseif ($board[$j-1][$i]==$player) {
+                            $mayBeTurnedVerticalPlayerDisc[] = ['x'=>$j, 'y'=>$i];
+
+                            if (count($mayBeTurnedVerticalPlayerDisc)===$playerStoneCountLimit)
+                            {
+                                if ($j>8) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedVerticalPlayerDisc);
+                                elseif (($board[$j+1][$i]!==NULL)&&($board[$j+1][$i]!=$player)) {
+                                    $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedVerticalPlayerDisc);
+                                };
+                            };
+                        } elseif (
+                            ($board[$j-1][$i]!=$player)
+                            && ($board[$j-1][$i]!==NULL)
+                        ) {
+                            $mayBeTurnedVerticalPlayerDisc = [];
+                            $mayBeTurnedVerticalPlayerDisc[] = ['x'=>$j, 'y'=>$i];
+
+                            if (count($mayBeTurnedVerticalOppDisc)===$oppStoneCountLimit) {
+                                $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedVerticalOppDisc);
+                            };
+
+                            $mayBeTurnedVerticalOppDisc = [];
+                        };
+                    };
+
+                    if (
+                        ($board[$j][$i]!=$player)
+                        && ($board[$j][$i]!==NULL)
+                    ) {
+                        if ($j===1) {
+                            $mayBeTurnedVerticalOppDisc = [];
+                            $mayBeTurnedVerticalOppDisc[] = ['x'=>$j, 'y'=>$i];
+                        } elseif ($board[$j-1][$i]==$player) {
+                            $mayBeTurnedVerticalOppDisc = [];
+                            $mayBeTurnedVerticalOppDisc[] = ['x'=>$j, 'y'=>$i];
+                            
+                            if (count($mayBeTurnedVerticalPlayerDisc)===$playerStoneCountLimit) {
+                                $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedVerticalPlayerDisc);
+                            };
+
+                            $mayBeTurnedVerticalPlayerDisc = [];
+                        } elseif (
+                            ($board[$j-1][$i]!=$player)
+                            && ($board[$j-1][$i]!==NULL)
+                        ) {
+                            $mayBeTurnedVerticalOppDisc[] = ['x'=>$j, 'y'=>$i];
+
+                            if (count($mayBeTurnedVerticalOppDisc)===$oppStoneCountLimit)
+                            {
+                                if ($j>8) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedVerticalOppDisc);
+                                elseif ($board[$j+1][$i]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedVerticalOppDisc);
+                            };
+                        };
+                    };
+                    if ($board[$j][$i]===NULL) {
+                        $mayBeTurnedVerticalOppDisc = [];
+                        $mayBeTurnedVerticalPlayerDisc = [];
+
+                    };
+
+                    // horizontal check
+                    if ($board[$i][$j]==$player) {
+                        if ($j===1) {
+                            $mayBeTurnedHorizonPlayerDisc = [];
+                            $mayBeTurnedHorizonPlayerDisc[] = ['x'=>$i, 'y'=>$j];
+                        } else if ($board[$i][$j-1]==$player) {
+                            $mayBeTurnedHorizonPlayerDisc[] = ['x'=>$i, 'y'=>$j];
+
+                            if (count($mayBeTurnedHorizonPlayerDisc)===$playerStoneCountLimit) {
+                                if ($j>8) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedHorizonPlayerDisc);
+                                elseif (($board[$i][$j+1] !== NULL)&&($board[$i][$j+1] != $player)) {
+                                    $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedHorizonPlayerDisc);
+                                };
+                            };
+                        } elseif (($board[$i][$j-1] != $player)&&($board[$i][$j-1] !== NULL)) {
+                            $mayBeTurnedHorizonPlayerDisc = [];
+                            $mayBeTurnedHorizonPlayerDisc[] = ['x'=>$i, 'y'=>$j];
+
+                            if (count($mayBeTurnedHorizonOppDisc)===$oppStoneCountLimit) {
+                                $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedHorizonOppDisc);
+                            };
+
+                            $mayBeTurnedHorizonOppDisc = [];
+                        };
+                    };
+
+                    if (($board[$i][$j] != $player)&&($board[$i][$j] !== NULL)) {
+                        if ($j===1) {
+                            $mayBeTurnedHorizonOppDisc = [];
+                            $mayBeTurnedHorizonOppDisc[] = ['x'=>$i, 'y'=>$j];
+                        } elseif ($board[$i][$j-1]==$player) {
+                            $mayBeTurnedHorizonOppDisc = [];
+                            $mayBeTurnedHorizonOppDisc[] = ['x'=>$i, 'y'=>$j];
+                            
+                            if (count($mayBeTurnedHorizonPlayerDisc)===$playerStoneCountLimit) {
+                                $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedHorizonPlayerDisc);
+                            };
+
+                            $mayBeTurnedHorizonPlayerDisc = [];
+                        } elseif (($board[$i][$j-1] != $player)&&($board[$i][$j-1] !== NULL)) {
+                            $mayBeTurnedHorizonOppDisc[] = ['x'=>$i, 'y'=>$j];
+
+                            if (count($mayBeTurnedHorizonOppDisc)===$oppStoneCountLimit) {
+                                if ($j>8) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedHorizonOppDisc);
+                                elseif ($board[$i][$j+1]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedHorizonOppDisc);
+                            };
+                        };
+                    };
+
+                    if ($board[$i][$j] ===NULL) {
+                        $mayBeTurnedHorizonOppDisc = [];
+                        $mayBeTurnedHorizonPlayerDisc = [];
+                    };
+
+                    // Diagonal check
+                    $current_x = 0;
+                    $current_y = 0;
+                    $check_x = 0;
+                    $check_y = 0;
+                    $end_x = 0;
+                    $end_y = 0;
+
+                    for ($k=0; $k < 9; $k++) {
+                        if ($i === 1) {
+                            $current_x = ($i+$k>0 && $i+$k<=9) ? $i+$k : NULL;
+                            $current_y = ($j+$k>0 && $j+$k<=9) ? $j+$k : NULL;
+                            $check_x = ($current_x-1>0 && $current_x-1<=9) ? $current_x-1 : NULL;
+                            $check_y = ($current_y-1>0 && $current_y-1<=9) ? $current_y-1 : NULL;
+                            $end_x = ($current_x+1>0 && $current_x+1<=9) ? $current_x+1 : NULL;
+                            $end_y = ($current_y+1>0 && $current_y+1<=9) ? $current_y+1 : NULL;
+                        }
+
+                        if ($i === 9) {
+                            $current_x = ($i-$k>0 && $i-$k<=9) ? $i-$k : NULL;
+                            $current_y = ($j-$k>0 && $j-$k<=9) ? $j-$k : NULL;
+                            $check_x = ($current_x+1>0 && $current_x+1<=9) ? $current_x+1 : NULL;
+                            $check_y = ($current_y+1>0 && $current_y+1<=9) ? $current_y+1 : NULL;
+                        }
+
+                        if (($i === 1 || $i === 9) && $current_x && $current_y) {
+                            if ($board[$current_x][$current_y] == $player) {
+                                if ($k === 0) {
+                                    $mayBeTurnedDiagonOnePlayerDisc = [];
+                                    $mayBeTurnedDiagonOnePlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                } elseif ($board[$check_x][$check_y] == $player) {
+                                    $mayBeTurnedDiagonOnePlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                    
+                                    if (count($mayBeTurnedDiagonOnePlayerDisc)===$playerStoneCountLimit) {
+                                        if ($current_y===1 || $current_y===9) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                        elseif ($board[$current_x][$current_y]==$player) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                    };
+                                } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
+                                    $mayBeTurnedDiagonOnePlayerDisc = [];
+                                    $mayBeTurnedDiagonOnePlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+
+                                    if (count($mayBeTurnedDiagonOneOppDisc)===$oppStoneCountLimit) {
+                                        $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                    };
+        
+                                    $mayBeTurnedDiagonOneOppDisc = [];
+                                }
+                            }
+
+                            if ($board[$current_x][$current_y] != $player && $board[$current_x][$current_y] !== NULL) {
+                                if ($k === 0) {
+                                    $mayBeTurnedDiagonOneOppDisc = [];
+                                    $mayBeTurnedDiagonOneOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                } elseif ($board[$check_x][$check_y] == $player) {
+                                    $mayBeTurnedDiagonOneOppDisc = [];
+                                    $mayBeTurnedDiagonOneOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+
+                                    if (count($mayBeTurnedDiagonOnePlayerDisc)===$playerStoneCountLimit) {
+                                        $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                    };
+        
+                                    $mayBeTurnedDiagonOnePlayerDisc = [];
+                                } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
+                                    $mayBeTurnedDiagonOneOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                    
+                                    if (count($mayBeTurnedDiagonOneOppDisc)===$oppStoneCountLimit) {
+                                        if ($current_y===1 || $current_y===9) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                        elseif ($board[$current_x][$current_y]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                    };
+                                };
+                            }
+
+                            if ($board[$current_x][$current_y] === NULL) {
+                                $mayBeTurnedDiagonOneOppDisc = [];
+                                $mayBeTurnedDiagonOnePlayerDisc = [];
+                            }
+                        }
+                    };
+
+                    for ($k=0; $k < 9; $k++) {
+                        if ($j === 1) {
+                            $current_x = ($i-$k>0 && $i-$k<=9) ? $i-$k : NULL;
+                            $current_y = ($j+$k>0 && $j+$k<=9) ? $j+$k : NULL;
+                            $check_x = ($current_x+1>0 && $current_x+1<=9) ? $current_x+1 : NULL;
+                            $check_y = ($current_y-1>0 && $current_y-1<=9) ? $current_y-1 : NULL;
+                        }
+
+                        if ($j === 9) {
+                            $current_x = ($i+$k>0 && $i+$k<=9) ? $i+$k : NULL;
+                            $current_y = ($j-$k>0 && $j-$k<=9) ? $j-$k : NULL;
+                            $check_x = ($current_x-1>0 && $current_x-1<=9) ? $current_x-1 : NULL;
+                            $check_y = ($current_y+1>0 && $current_y+1<=9) ? $current_y+1 : NULL;
+                        }
+
+                        if (($j === 1 || $j === 9) && $current_x && $current_y) {
+                            if ($board[$current_x][$current_y] == $player) {
+                                if ($k === 0) {
+                                    $mayBeTurnedDiagonTwoPlayerDisc = [];
+                                    $mayBeTurnedDiagonTwoPlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                } elseif ($board[$check_x][$check_y] == $player) {
+                                    $mayBeTurnedDiagonTwoPlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                    
+                                    if (count($mayBeTurnedDiagonTwoPlayerDisc)===$playerStoneCountLimit) {
+                                        if ($current_x===1 || $current_x===9) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
+                                        elseif ($board[$current_x][$current_y]==$player) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
+                                    };
+                                } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
+                                    $mayBeTurnedDiagonTwoPlayerDisc = [];
+                                    $mayBeTurnedDiagonTwoPlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+
+                                    if (count($mayBeTurnedDiagonTwoOppDisc)===$oppStoneCountLimit) {
+                                        $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
+                                    };
+        
+                                    $mayBeTurnedDiagonTwoOppDisc = [];
+                                }
+                            }
+
+                            if ($board[$current_x][$current_y] != $player && $board[$current_x][$current_y] !== NULL) {
+                                if ($k === 0) {
+                                    $mayBeTurnedDiagonTwoOppDisc = [];
+                                    $mayBeTurnedDiagonTwoOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                } elseif ($board[$check_x][$check_y] == $player) {
+                                    $mayBeTurnedDiagonTwoOppDisc = [];
+                                    $mayBeTurnedDiagonTwoOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+
+                                    if (count($mayBeTurnedDiagonTwoPlayerDisc)===$playerStoneCountLimit) {
+                                        $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
+                                    };
+        
+                                    $mayBeTurnedDiagonTwoPlayerDisc = [];
+                                } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
+                                    $mayBeTurnedDiagonTwoOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                    
+                                    if (count($mayBeTurnedDiagonTwoOppDisc)===$oppStoneCountLimit) {
+                                        if ($current_x===1 || $current_x===9) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
+                                        elseif ($board[$current_x][$current_y]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
+                                    };
+                                };
+                            }
+
+                            if ($board[$current_x][$current_y] === NULL) {
+                                $mayBeTurnedDiagonTwoOppDisc = [];
+                                $mayBeTurnedDiagonTwoPlayerDisc = [];
+                            }
+                        }
                     }
                 }
+            }
 
-                if (count($mayBeTurnedOver) == $stoneCountLimit) {
-                    $turnedOverDiscs=array_merge($turnedOverDiscs, $mayBeTurnedOver);
-                }
-                
-                $mayBeTurnedOver = [];
-            } 
         }
         return $turnedOverDiscs;
     }
@@ -283,12 +523,14 @@ class Qo extends Table
         $turnedOverDiscs = $this->getTurnedOverDiscs( $clickX, $clickY, $player_id, $board );
         
         // Let's place a disc at x,y and return all "$returned" discs to the active player
-        $sql = "UPDATE board SET board_player='$player_id'
-                    WHERE board_x='$clickX' AND board_y='$clickY'";
-        $this->DbQuery( $sql );
+        if(count($turnedOverDiscs[1])===0){
+            $sql = "UPDATE board SET board_player='$player_id'
+                        WHERE board_x='$clickX' AND board_y='$clickY'";
+            $this->DbQuery( $sql );
 
-        $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $player_id . "', '" . $positionArr[$clickY] . $clickX . "')";
-        $this->DbQuery( $sql );
+            $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $player_id . "', '" . $positionArr[$clickY] . $clickX . "')";
+            $this->DbQuery( $sql );
+        };
 
         $lostStone = $count*2;
 
@@ -296,32 +538,31 @@ class Qo extends Table
         else $sql = "UPDATE player SET player_stone = player_stone - '$lostStone' WHERE player_id='$player_id'";
         $this->DbQuery( $sql );
 
-            if( count( $turnedOverDiscs ) > 0 )
+            if( count( $turnedOverDiscs[0] ) > 0 || count( $turnedOverDiscs[1] ) > 0 )
             {
-                if (count($turnedOverDiscs) === 1) {
-                    $sql = "UPDATE board SET board_player=NULL
-                            WHERE board_x=" . $turnedOverDiscs[0]['x'] . " AND board_y=" . $turnedOverDiscs[0]['y'];
-                } else {
-                    $sql = "UPDATE board SET board_player=NULL WHERE ( board_x, board_y) IN ( ";
-                    
-                    foreach( $turnedOverDiscs as $turnedOver )
-                    {
-                        $sql .= "('" . $turnedOver['x'] . "', '" . $turnedOver['y'] . "'),";
+                for ($i=0; $i < count( $turnedOverDiscs ); $i++) { 
+                    if (count($turnedOverDiscs[$i]) > 0) {
+                        $sql = "UPDATE board SET board_player=NULL WHERE ( board_x, board_y) IN ( ";
+                
+                        foreach( $turnedOverDiscs[$i] as $turnedOver )
+                        {
+                            $sql .= "('" . $turnedOver['x'] . "', '" . $turnedOver['y'] . "'),";
+                        }
+                        $sql = substr( $sql, 0, -1) . " )";
+                                
+                        $this->DbQuery( $sql );
                     }
-                    $sql = substr( $sql, 0, -1) . " )";
                 }
-                        
-                $this->DbQuery( $sql );
                 
                 // Update scores according to the number of disc on board
                 $sql = "UPDATE player
-                        SET player_score = player_score + " . count( $turnedOverDiscs );
+                        SET player_score = player_score + " . count( $turnedOverDiscs[0] );
                 $sql .= " WHERE player_id='$player_id'";
                 $this->DbQuery( $sql );
             }
-                
+
             // Statistics
-            $this->incStat( count( $turnedOverDiscs ), "turnedOver", $player_id );
+            $this->incStat( count( $turnedOverDiscs[0] ), "turnedOver", $player_id );
             if( ($clickX==1 && $clickY==1) || ($clickX==9 && $clickY==1) || ($clickX==1 && $clickY==9) || ($clickX==9 && $clickY==9) )
                 $this->incStat( 1, 'discPlayedOnCorner', $player_id );
             else if( $clickX==1 || $clickX==9 || $clickY==1 || $clickY==9 )
@@ -340,12 +581,12 @@ class Qo extends Table
                 $secondPos = "" . $v_posArr[intval($clickY)-1] . $clickX;
 
                 $msg = '${player_name} moves ' . $firstPos . ' to ' . $secondPos;
-                if (count( $turnedOverDiscs )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
+                if (count( $turnedOverDiscs[0] )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
                 
                 $this->notifyAllPlayers( "moveDisc", clienttranslate( $msg ), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
-                    'returned_nbr' => count( $turnedOverDiscs ),
+                    'returned_nbr' => count( $turnedOverDiscs[0] ),
                     'colors' => $newColors,
                     'beforeX' => intval(strval($x)[0]),
                     'beforeY' => intval(strval($x)[1]),
@@ -356,12 +597,12 @@ class Qo extends Table
                 $pos = "" . $v_posArr[intval($clickY)-1] . $clickX;
 
                 $msg = '${player_name} places a lodestone at ' . $pos;
-                if (count( $turnedOverDiscs )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
+                if (count( $turnedOverDiscs[0] )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
 
                 $this->notifyAllPlayers( "playDisc", clienttranslate( $msg ), array(
                     'player_id' => $player_id,
                     'player_name' => $this->getActivePlayerName(),
-                    'returned_nbr' => count( $turnedOverDiscs ),
+                    'returned_nbr' => count( $turnedOverDiscs[0] ),
                     'colors' => $newColors,
                     'x' => $clickX,
                     'y' => $clickY
@@ -455,7 +696,7 @@ class Qo extends Table
             $this->gamestate->nextState( 'endGame' );
             return ;
         }
-        else if( intval($player_remain_stones[$player_id]) === 0 )
+        else if( intval($player_remain_stones[$active_player_id]) === 0 )
         {
             // Active player has no more lodestones to play on the board
             $this->gamestate->nextState( 'endGame' );
@@ -468,6 +709,101 @@ class Qo extends Table
             $this->gamestate->nextState( 'nextTurn' );
         }
     }
+
+    
+    // function stGameEnd()
+    // {
+    //     // Calculate final scores
+    //     $winner_name = "";
+    //     $winner_score = 0;
+    //     $loser_name = "";
+    //     $loser_score = 0;
+    //     $result = [];
+    //     $finalScores = [];
+    //     $remainStoneOnBoard = [];
+    //     $playerArr = [];
+    //     $players = $this->loadPlayersBasicInfos();
+
+    //     // Initialize scores array
+    //     foreach ($players as $player_id => $player) {
+    //         array_push($playerArr, $player_id);
+    //         $finalScores[$player_id] = 0;
+    //         $remainStoneOnBoard[$player_id] = 0;
+    //     }
+
+    //     // Calculate scores based on the final board state
+    //     $board = $this->getBoard();
+    //     for ($x = 1; $x <= 9; $x++) {
+    //         for ($y = 1; $y <= 9; $y++) {
+    //             if ($board[$x][$y] !== null) {
+    //                 $remainStoneOnBoard[$board[$x][$y]]++;
+    //             }
+    //         }
+    //     }
+
+    //     $remainStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
+
+    //     foreach ($players as $player_id => $player) {
+    //         $finalScores[$player_id] = $remainStoneOnBoard[$player_id] . $remainStones[$player_id];
+    //     }
+
+    //     if (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])<8) {
+    //         if ($finalScores[$playerArr[0]]>$finalScores[$playerArr[1]]) {
+    //             $result[$playerArr[0]] = 1;
+    //             $result[$playerArr[1]] = 0;
+    //             $winner_name = $players[$playerArr[0]];
+    //             $winner_score = $finalScores[$playerArr[0]];
+    //             $loser_name = $players[$playerArr[1]];
+    //             $loser_score = $finalScores[$playerArr[1]];
+    //         } else {
+    //             $result[$playerArr[0]] = 0;
+    //             $result[$playerArr[1]] = 1;
+    //             $winner_name = $players[$playerArr[1]];
+    //             $winner_score = $finalScores[$playerArr[1]];
+    //             $loser_name = $players[$playerArr[0]];
+    //             $loser_score = $finalScores[$playerArr[0]];
+    //         }
+    //     } elseif (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])>=8) {
+    //         if ($finalScores[$playerArr[0]]>$finalScores[$playerArr[1]]) {
+    //             $result[$playerArr[0]] = 0;
+    //             $result[$playerArr[1]] = 1;
+    //             $winner_name = $players[$playerArr[1]];
+    //             $winner_score = $finalScores[$playerArr[1]];
+    //             $loser_name = $players[$playerArr[0]];
+    //             $loser_score = $finalScores[$playerArr[0]];
+    //         } else {
+    //             $result[$playerArr[0]] = 1;
+    //             $result[$playerArr[1]] = 0;
+    //             $winner_name = $players[$playerArr[0]];
+    //             $winner_score = $finalScores[$playerArr[0]];
+    //             $loser_name = $players[$playerArr[1]];
+    //             $loser_score = $finalScores[$playerArr[1]];
+    //         }
+    //     } else {
+    //         $result[$playerArr[0]] = 1;
+    //         $result[$playerArr[1]] = 1;
+    //         $winner_score = $finalScores[$playerArr[0]];
+    //         $loser_score = $finalScores[$playerArr[0]];
+    //     }
+        
+
+    //     // Update the scores in the database
+    //     foreach ($result as $player_id => $score) {
+    //         $sql = "UPDATE player SET player_score = $score WHERE player_id = $player_id";
+    //         $this->DbQuery($sql);
+    //     }
+
+    //     // Notify all players about the final scores
+    //     $this->notifyAllPlayers("finalScores", clienttranslate("Game Over!"), [
+    //         'winner_name' => $winner_name,
+    //         'winner_score' => $winner_score,
+    //         'loser_name' => $loser_name,
+    //         'loser_score' => $loser_score,
+    //     ]);
+
+    //     // End the game and provide statistics if needed
+    //     $this->gamestate->nextState('endGame');
+    // }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie
