@@ -75,6 +75,7 @@ function (dojo, declare, dom, html) {
                     board.insertAdjacentHTML(`afterbegin`, `<div id="square_${x}_${y}" class="square" style="left: ${left}px; top: ${top}px;"></div>`);
                 }
             }
+            
 
             for( var i in gamedatas.board )
             {
