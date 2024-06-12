@@ -94,7 +94,7 @@ html {
 .disc[data-color="ffffff"] { background-position-x: 0%; }
 .disc[data-color="000000"] { background-position-x: 100%; }
 
-.possibleMove {
+.emptyPositions {
     cursor: pointer;  
 }
 
@@ -160,7 +160,7 @@ html {
 }
 
 .stone-box {
-    display: ruby-text;
+    display: flex;
     height: 70px;
 }
 
@@ -222,6 +222,8 @@ html {
 }
 
 .lodestone-black {
+    position: relative;
+    left: 30px;
     width: 60px;
     height: 60px;
     background-color: white;
@@ -234,6 +236,8 @@ html {
 }
 
 .lodestone-white {
+    position: relative;
+    left: 30px;
     width: 60px;
     height: 60px;
     background-color: black;
@@ -379,12 +383,14 @@ html {
 .score-box-black {
     position: relative;
     top: 10px;
+    left: 50px;
     color: white;
 }
 
 .score-box-white {
     position: relative;
     top: 10px;
+    left: 50px;
     color: black;
 }
 

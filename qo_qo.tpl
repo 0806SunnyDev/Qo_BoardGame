@@ -32,7 +32,7 @@
     <div class="last-move-display-container">
         <div class="user-box-black">
             <div class="pay-btn-container" id="active-black">
-                <div class="pay-btn-black"></div>
+                <div class="pay-btn-black" id="pay-btn"></div>
             </div>
             <div class="stone-box">
                 <div class="lodestone-black" id="lodestone-1"></div>
@@ -59,7 +59,7 @@
         </div>
         <div class="user-box-white">
             <div class="pay-btn-container" id="active-white">
-                <div class="pay-btn-white"></div>
+                <div class="pay-btn-white" id="pay-btn"></div>
             </div>
             <div class="stone-box">
                 <div class="lodestone-white" id="lodestone-2"></div>

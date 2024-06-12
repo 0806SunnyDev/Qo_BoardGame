@@ -86,11 +86,6 @@ class Qo extends Table
             for( $y=1; $y<=9; $y++ )
             {
                 $token_value = "NULL";
-                // if( ($x==4 && $y==5) || ($x==6 && $y==5) )  // Initial positions of white player
-                //     $token_value = "'$whiteplayer_id'";
-                // else if( ($x==5 && $y==4) || ($x==5 && $y==6) )  // Initial positions of black player
-                //     $token_value = "'$blackplayer_id'";
-                    
                 $sql_values[] = "('$x','$y',$token_value)";
             }
         }
@@ -312,6 +307,11 @@ class Qo extends Table
                     $end_x = 0;
                     $end_y = 0;
 
+                    $capPlayerFlagOne = true;
+                    $capOppFlagOne = true;
+                    $capPlayerFlagTwo = true;
+                    $capOppFlagTwo = true;
+
                     for ($k=0; $k < 9; $k++) {
                         if ($i === 1) {
                             $current_x = ($i+$k>0 && $i+$k<=9) ? $i+$k : NULL;
@@ -325,31 +325,39 @@ class Qo extends Table
                         if ($i === 9) {
                             $current_x = ($i-$k>0 && $i-$k<=9) ? $i-$k : NULL;
                             $current_y = ($j-$k>0 && $j-$k<=9) ? $j-$k : NULL;
-                            $check_x = ($current_x+1>0 && $current_x+1<=9) ? $current_x+1 : NULL;
-                            $check_y = ($current_y+1>0 && $current_y+1<=9) ? $current_y+1 : NULL;
+                            $check_x = (($current_x+1>0) && ($current_x+1<=9)) ? ($current_x+1) : NULL;
+                            $check_y = (($current_y+1>0) && ($current_y+1<=9)) ? ($current_y+1) : NULL;
+                            $end_x = (($current_x-1>0) && ($current_x-1<=9)) ? ($current_x-1) : NULL;
+                            $end_y = (($current_y-1>0) && ($current_y-1<=9)) ? ($current_y-1) : NULL;
                         }
 
+                        
                         if (($i === 1 || $i === 9) && $current_x && $current_y) {
                             if ($board[$current_x][$current_y] == $player) {
                                 if ($k === 0) {
                                     $mayBeTurnedDiagonOnePlayerDisc = [];
                                     $mayBeTurnedDiagonOnePlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                    $capPlayerFlagOne = true;
                                 } elseif ($board[$check_x][$check_y] == $player) {
                                     $mayBeTurnedDiagonOnePlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
-                                    
-                                    if (count($mayBeTurnedDiagonOnePlayerDisc)===$playerStoneCountLimit) {
-                                        if ($current_y===1 || $current_y===9) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
-                                        elseif ($board[$current_x][$current_y]==$player) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                    if ((count($mayBeTurnedDiagonOnePlayerDisc)===$playerStoneCountLimit) && $capPlayerFlagOne) {
+                                        if ($end_x===NULL || $end_y===NULL) {
+                                            $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                        }
+                                        elseif (($board[$end_x][$end_y] != $player)&&($board[$end_x][$end_y] !== NULL)) {
+                                            $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                        }
                                     };
                                 } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
                                     $mayBeTurnedDiagonOnePlayerDisc = [];
                                     $mayBeTurnedDiagonOnePlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
 
-                                    if (count($mayBeTurnedDiagonOneOppDisc)===$oppStoneCountLimit) {
+                                    if ((count($mayBeTurnedDiagonOneOppDisc)===$oppStoneCountLimit) && $capOppFlagOne) {
                                         $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
                                     };
-        
                                     $mayBeTurnedDiagonOneOppDisc = [];
+
+                                    $capPlayerFlagOne = true;
                                 }
                             }
 
@@ -357,21 +365,28 @@ class Qo extends Table
                                 if ($k === 0) {
                                     $mayBeTurnedDiagonOneOppDisc = [];
                                     $mayBeTurnedDiagonOneOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+
+                                    $capOppFlagOne = true;
                                 } elseif ($board[$check_x][$check_y] == $player) {
                                     $mayBeTurnedDiagonOneOppDisc = [];
                                     $mayBeTurnedDiagonOneOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
 
-                                    if (count($mayBeTurnedDiagonOnePlayerDisc)===$playerStoneCountLimit) {
+                                    if ((count($mayBeTurnedDiagonOnePlayerDisc)===$playerStoneCountLimit) && $capPlayerFlagOne) {
                                         $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
                                     };
         
                                     $mayBeTurnedDiagonOnePlayerDisc = [];
+                                    $capOppFlagOne = true;
                                 } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
                                     $mayBeTurnedDiagonOneOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
                                     
-                                    if (count($mayBeTurnedDiagonOneOppDisc)===$oppStoneCountLimit) {
-                                        if ($current_y===1 || $current_y===9) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
-                                        elseif ($board[$current_x][$current_y]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                    if ((count($mayBeTurnedDiagonOneOppDisc)===$oppStoneCountLimit) && $capOppFlagOne) {
+                                        if ($end_x===NULL || $end_y===NULL) {
+                                            $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                        }
+                                        elseif ($board[$end_x][$end_y]==$player) {
+                                            $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                        }
                                     };
                                 };
                             }
@@ -379,6 +394,8 @@ class Qo extends Table
                             if ($board[$current_x][$current_y] === NULL) {
                                 $mayBeTurnedDiagonOneOppDisc = [];
                                 $mayBeTurnedDiagonOnePlayerDisc = [];
+                                $capPlayerFlagOne = false;
+                                $capOppFlagOne = false;
                             }
                         }
                     };
@@ -389,6 +406,8 @@ class Qo extends Table
                             $current_y = ($j+$k>0 && $j+$k<=9) ? $j+$k : NULL;
                             $check_x = ($current_x+1>0 && $current_x+1<=9) ? $current_x+1 : NULL;
                             $check_y = ($current_y-1>0 && $current_y-1<=9) ? $current_y-1 : NULL;
+                            $end_x = ($current_x-1>0 && $current_x-1<=9) ? $current_x-1 : NULL;
+                            $end_y = ($current_y+1>0 && $current_y+1<=9) ? $current_y+1 : NULL;
                         }
 
                         if ($j === 9) {
@@ -396,6 +415,8 @@ class Qo extends Table
                             $current_y = ($j-$k>0 && $j-$k<=9) ? $j-$k : NULL;
                             $check_x = ($current_x-1>0 && $current_x-1<=9) ? $current_x-1 : NULL;
                             $check_y = ($current_y+1>0 && $current_y+1<=9) ? $current_y+1 : NULL;
+                            $end_x = ($current_x+1>0 && $current_x+1<=9) ? $current_x+1 : NULL;
+                            $end_y = ($current_y-1>0 && $current_y-1<=9) ? $current_y-1 : NULL;
                         }
 
                         if (($j === 1 || $j === 9) && $current_x && $current_y) {
@@ -403,51 +424,57 @@ class Qo extends Table
                                 if ($k === 0) {
                                     $mayBeTurnedDiagonTwoPlayerDisc = [];
                                     $mayBeTurnedDiagonTwoPlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                    $capPlayerFlagTwo = true;
                                 } elseif ($board[$check_x][$check_y] == $player) {
                                     $mayBeTurnedDiagonTwoPlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
                                     
                                     if (count($mayBeTurnedDiagonTwoPlayerDisc)===$playerStoneCountLimit) {
-                                        if ($current_x===1 || $current_x===9) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
-                                        elseif ($board[$current_x][$current_y]==$player) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
+                                        if ($end_x===NULL || $end_y===NULL) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
+                                        elseif (($board[$end_x][$end_y] != $player)&&($board[$end_x][$end_y] !== NULL)) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
                                     };
                                 } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
                                     $mayBeTurnedDiagonTwoPlayerDisc = [];
                                     $mayBeTurnedDiagonTwoPlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
-
+                                    
                                     if (count($mayBeTurnedDiagonTwoOppDisc)===$oppStoneCountLimit) {
                                         $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
                                     };
-        
+                                    
                                     $mayBeTurnedDiagonTwoOppDisc = [];
+                                    $capPlayerFlagTwo = true;
                                 }
                             }
-
+                            
                             if ($board[$current_x][$current_y] != $player && $board[$current_x][$current_y] !== NULL) {
                                 if ($k === 0) {
                                     $mayBeTurnedDiagonTwoOppDisc = [];
                                     $mayBeTurnedDiagonTwoOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
+                                    $capOppFlagTwo = true;
                                 } elseif ($board[$check_x][$check_y] == $player) {
                                     $mayBeTurnedDiagonTwoOppDisc = [];
                                     $mayBeTurnedDiagonTwoOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
-
+                                    
                                     if (count($mayBeTurnedDiagonTwoPlayerDisc)===$playerStoneCountLimit) {
                                         $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
                                     };
-        
+                                    
                                     $mayBeTurnedDiagonTwoPlayerDisc = [];
+                                    $capOppFlagTwo = true;
                                 } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
                                     $mayBeTurnedDiagonTwoOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
                                     
                                     if (count($mayBeTurnedDiagonTwoOppDisc)===$oppStoneCountLimit) {
-                                        if ($current_x===1 || $current_x===9) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
-                                        elseif ($board[$current_x][$current_y]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
+                                        if ($end_x===NULL || $end_y===NULL) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
+                                        elseif ($board[$end_x][$end_y]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
                                     };
                                 };
                             }
-
+                            
                             if ($board[$current_x][$current_y] === NULL) {
                                 $mayBeTurnedDiagonTwoOppDisc = [];
                                 $mayBeTurnedDiagonTwoPlayerDisc = [];
+                                $capPlayerFlagTwo = false;
+                                $capOppFlagTwo = false;
                             }
                         }
                     }
@@ -466,7 +493,7 @@ class Qo extends Table
     }
 
     // Get the list of possible moves (x => y => true)
-    function getPossibleMoves( int $player_id ): array
+    function getEmptyPositions( int $player_id ): array
     {
         $result = [];
         
@@ -633,7 +660,7 @@ class Qo extends Table
     function argPlayerTurn(): array
     {
         return [
-            'possibleMoves' => $this->getPossibleMoves( intval($this->getActivePlayerId()) )
+            'emptyPositions' => $this->getEmptyPositions( intval($this->getActivePlayerId()) )
         ];
     }
 
@@ -711,99 +738,99 @@ class Qo extends Table
     }
 
     
-    // function stGameEnd()
-    // {
-    //     // Calculate final scores
-    //     $winner_name = "";
-    //     $winner_score = 0;
-    //     $loser_name = "";
-    //     $loser_score = 0;
-    //     $result = [];
-    //     $finalScores = [];
-    //     $remainStoneOnBoard = [];
-    //     $playerArr = [];
-    //     $players = $this->loadPlayersBasicInfos();
+    function stGameEnd()
+    {
+        // Calculate final scores
+        $winner_name = "";
+        $winner_score = 0;
+        $loser_name = "";
+        $loser_score = 0;
+        $result = [];
+        $finalScores = [];
+        $remainStoneOnBoard = [];
+        $playerArr = [];
+        $players = $this->loadPlayersBasicInfos();
 
-    //     // Initialize scores array
-    //     foreach ($players as $player_id => $player) {
-    //         array_push($playerArr, $player_id);
-    //         $finalScores[$player_id] = 0;
-    //         $remainStoneOnBoard[$player_id] = 0;
-    //     }
+        // Initialize scores array
+        foreach ($players as $player_id => $player) {
+            array_push($playerArr, $player_id);
+            $finalScores[$player_id] = 0;
+            $remainStoneOnBoard[$player_id] = 0;
+        }
 
-    //     // Calculate scores based on the final board state
-    //     $board = $this->getBoard();
-    //     for ($x = 1; $x <= 9; $x++) {
-    //         for ($y = 1; $y <= 9; $y++) {
-    //             if ($board[$x][$y] !== null) {
-    //                 $remainStoneOnBoard[$board[$x][$y]]++;
-    //             }
-    //         }
-    //     }
+        // Calculate scores based on the final board state
+        $board = $this->getBoard();
+        for ($x = 1; $x <= 9; $x++) {
+            for ($y = 1; $y <= 9; $y++) {
+                if ($board[$x][$y] !== null) {
+                    $remainStoneOnBoard[$board[$x][$y]]++;
+                }
+            }
+        }
 
-    //     $remainStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
+        $remainStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
 
-    //     foreach ($players as $player_id => $player) {
-    //         $finalScores[$player_id] = $remainStoneOnBoard[$player_id] . $remainStones[$player_id];
-    //     }
+        foreach ($players as $player_id => $player) {
+            $finalScores[$player_id] = $remainStoneOnBoard[$player_id] . $remainStones[$player_id];
+        }
 
-    //     if (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])<8) {
-    //         if ($finalScores[$playerArr[0]]>$finalScores[$playerArr[1]]) {
-    //             $result[$playerArr[0]] = 1;
-    //             $result[$playerArr[1]] = 0;
-    //             $winner_name = $players[$playerArr[0]];
-    //             $winner_score = $finalScores[$playerArr[0]];
-    //             $loser_name = $players[$playerArr[1]];
-    //             $loser_score = $finalScores[$playerArr[1]];
-    //         } else {
-    //             $result[$playerArr[0]] = 0;
-    //             $result[$playerArr[1]] = 1;
-    //             $winner_name = $players[$playerArr[1]];
-    //             $winner_score = $finalScores[$playerArr[1]];
-    //             $loser_name = $players[$playerArr[0]];
-    //             $loser_score = $finalScores[$playerArr[0]];
-    //         }
-    //     } elseif (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])>=8) {
-    //         if ($finalScores[$playerArr[0]]>$finalScores[$playerArr[1]]) {
-    //             $result[$playerArr[0]] = 0;
-    //             $result[$playerArr[1]] = 1;
-    //             $winner_name = $players[$playerArr[1]];
-    //             $winner_score = $finalScores[$playerArr[1]];
-    //             $loser_name = $players[$playerArr[0]];
-    //             $loser_score = $finalScores[$playerArr[0]];
-    //         } else {
-    //             $result[$playerArr[0]] = 1;
-    //             $result[$playerArr[1]] = 0;
-    //             $winner_name = $players[$playerArr[0]];
-    //             $winner_score = $finalScores[$playerArr[0]];
-    //             $loser_name = $players[$playerArr[1]];
-    //             $loser_score = $finalScores[$playerArr[1]];
-    //         }
-    //     } else {
-    //         $result[$playerArr[0]] = 1;
-    //         $result[$playerArr[1]] = 1;
-    //         $winner_score = $finalScores[$playerArr[0]];
-    //         $loser_score = $finalScores[$playerArr[0]];
-    //     }
+        if (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])<8) {
+            if ($finalScores[$playerArr[0]]>$finalScores[$playerArr[1]]) {
+                $result[$playerArr[0]] = 1;
+                $result[$playerArr[1]] = 0;
+                $winner_name = $players[$playerArr[0]];
+                $winner_score = $finalScores[$playerArr[0]];
+                $loser_name = $players[$playerArr[1]];
+                $loser_score = $finalScores[$playerArr[1]];
+            } else {
+                $result[$playerArr[0]] = 0;
+                $result[$playerArr[1]] = 1;
+                $winner_name = $players[$playerArr[1]];
+                $winner_score = $finalScores[$playerArr[1]];
+                $loser_name = $players[$playerArr[0]];
+                $loser_score = $finalScores[$playerArr[0]];
+            }
+        } elseif (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])>=8) {
+            if ($finalScores[$playerArr[0]]>$finalScores[$playerArr[1]]) {
+                $result[$playerArr[0]] = 0;
+                $result[$playerArr[1]] = 1;
+                $winner_name = $players[$playerArr[1]];
+                $winner_score = $finalScores[$playerArr[1]];
+                $loser_name = $players[$playerArr[0]];
+                $loser_score = $finalScores[$playerArr[0]];
+            } else {
+                $result[$playerArr[0]] = 1;
+                $result[$playerArr[1]] = 0;
+                $winner_name = $players[$playerArr[0]];
+                $winner_score = $finalScores[$playerArr[0]];
+                $loser_name = $players[$playerArr[1]];
+                $loser_score = $finalScores[$playerArr[1]];
+            }
+        } else {
+            $result[$playerArr[0]] = 1;
+            $result[$playerArr[1]] = 1;
+            $winner_score = $finalScores[$playerArr[0]];
+            $loser_score = $finalScores[$playerArr[0]];
+        }
         
 
-    //     // Update the scores in the database
-    //     foreach ($result as $player_id => $score) {
-    //         $sql = "UPDATE player SET player_score = $score WHERE player_id = $player_id";
-    //         $this->DbQuery($sql);
-    //     }
+        // Update the scores in the database
+        foreach ($result as $player_id => $score) {
+            $sql = "UPDATE player SET player_score = $score WHERE player_id = $player_id";
+            $this->DbQuery($sql);
+        }
 
-    //     // Notify all players about the final scores
-    //     $this->notifyAllPlayers("finalScores", clienttranslate("Game Over!"), [
-    //         'winner_name' => $winner_name,
-    //         'winner_score' => $winner_score,
-    //         'loser_name' => $loser_name,
-    //         'loser_score' => $loser_score,
-    //     ]);
+        // Notify all players about the final scores
+        $this->notifyAllPlayers("finalScores", clienttranslate("Game Over!"), [
+            'winner_name' => $winner_name,
+            'winner_score' => $winner_score,
+            'loser_name' => $loser_name,
+            'loser_score' => $loser_score,
+        ]);
 
-    //     // End the game and provide statistics if needed
-    //     $this->gamestate->nextState('endGame');
-    // }
+        // End the game and provide statistics if needed
+        $this->gamestate->nextState('endGame');
+    }
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Zombie

@@ -44,9 +44,19 @@ function (dojo, declare, dom, html) {
             const playerTwoStone = document.getElementById('lodestone-2');
             const playerTwoScore = document.getElementById('score-2');
             
+            var firstId = true;
+            var activePlayer = "";
+            var activePlayerId = "";
+
             // Setting up player boards
             for( var player_id in gamedatas.players )
             {
+                if (firstId) {
+                    activePlayer = player_id;
+                    activePlayerId = (gamedatas.players[activePlayer]['color'] === '000000') ? 'active-black' : 'active-white' ;
+                    firstId = false;
+                }
+
                 var player = gamedatas.players[player_id];
 
                 // console.log('player => ', player['id']);
@@ -80,7 +90,7 @@ function (dojo, declare, dom, html) {
             {
                 var square = gamedatas.board[i];
                 
-                
+
                 if( square.player !== null )
                 {
                     this.addDiscOnBoard( square.x, square.y, square.player );
@@ -106,23 +116,18 @@ function (dojo, declare, dom, html) {
                         `afterbegin`,
                         `<div class="${className}">${gamedatas.record[i]['position']}</div>`
                     );
-
-                    // console.log(first)
-
-                    if (document.getElementById("active-player")) document.getElementById("active-player").remove();
-
-                    document.getElementById(idActiveName).insertAdjacentHTML(
-                        `beforeend`,
-                        `<div id="active-player"></div>`
-                    );
-
                 }
             }
 
-            // this.addDiscOnBoard( 2, 3, this.player_id );
+            if (document.getElementById("active-player")) document.getElementById("active-player").remove();
+            document.getElementById(activePlayerId).insertAdjacentHTML(
+                `beforeend`,
+                `<div id="active-player"></div>`
+            );
 
             if (!this.isSpectator) {
                 document.querySelectorAll('.square').forEach(square => square.addEventListener('click', e => this.onPlayDisc(e)));
+                document.querySelectorAll('#pay-btn').forEach(btn => btn.addEventListener('click', e => this.onClickPayBtn(e)));
             }
             
             // Setup game notifications to handle (see "setupNotifications" method below)
@@ -145,7 +150,7 @@ function (dojo, declare, dom, html) {
             switch( stateName )
             {
             case 'playerTurn':
-                if (!this.isSpectator) this.updatePossibleMoves( args.args.possibleMoves );
+                if (!this.isSpectator) this.updateEmptyPositions( args.args.emptyPositions );
                 break;
             }
         },
@@ -246,21 +251,21 @@ function (dojo, declare, dom, html) {
             }).play();
         },
 
-        updatePossibleMoves: function( possibleMoves )
+        updateEmptyPositions: function( emptyPositions )
         {
             // Remove current possible moves
-            document.querySelectorAll('.possibleMove').forEach(div => div.classList.remove('possibleMove'));
+            document.querySelectorAll('.emptyPositions').forEach(div => div.classList.remove('emptyPositions'));
 
-            for( var x in possibleMoves )
+            for( var x in emptyPositions )
             {
-                for( var y in possibleMoves[ x ] )
+                for( var y in emptyPositions[ x ] )
                 {
                     // x,y is a possible move
-                    document.getElementById(`square_${x}_${y}`).classList.add('possibleMove');
+                    document.getElementById(`square_${x}_${y}`).classList.add('emptyPositions');
                 }            
             }
                         
-            this.addTooltipToClass( 'possibleMove', '', _('Place a lodestone here') );
+            this.addTooltipToClass( 'emptyPositions', '', _('Place a lodestone here') );
             this.addTooltipToClass( 'disc', '', _('Click to move this lodestone') );
         },
 
@@ -282,7 +287,7 @@ function (dojo, declare, dom, html) {
                 x = coords[1];
                 y = coords[2];
 
-                if(!document.getElementById(`square_${x}_${y}`).classList.contains('possibleMove')) {
+                if(!document.getElementById(`square_${x}_${y}`).classList.contains('emptyPositions')) {
                     // This is not a possible move => the click does nothing
                     return ;
                 }
@@ -379,6 +384,16 @@ function (dojo, declare, dom, html) {
 
             
         },
+
+        onClickPayBtn: function ( evt ) {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            
+
+            console.log("Hello => ", evt);
+        },
         
         ///////////////////////////////////////////////////
         //// Utility methods
@@ -472,7 +487,7 @@ function (dojo, declare, dom, html) {
         notif_playDisc: function( notif )
         {
             // Remove current possible moves (makes the board more clear)
-            document.querySelectorAll('.possibleMove').forEach(div => div.classList.remove('possibleMove'));
+            document.querySelectorAll('.emptyPositions').forEach(div => div.classList.remove('emptyPositions'));
         
             this.addDiscOnBoard( notif.args.x, notif.args.y, notif.args.player_id );
             
@@ -508,7 +523,7 @@ function (dojo, declare, dom, html) {
         notif_moveDisc: function( notif )
         {
             // Remove current possible moves (makes the board more clear)
-            document.querySelectorAll('.possibleMove').forEach(div => div.classList.remove('possibleMove'));
+            document.querySelectorAll('.emptyPositions').forEach(div => div.classList.remove('emptyPositions'));
 
             this.moveDiscOnBoard( notif.args.beforeX, notif.args.beforeY, notif.args.x, notif.args.y, notif.args.player_id );
             
@@ -597,17 +612,17 @@ function (dojo, declare, dom, html) {
 
         },
 
-        // notif_finalScores: function( notif )
-        // {
-        //     console.log("Game Over");
-        //     var msg = `Game Over!<br>The winner is ${notif.args.winner_name} with ${notif.args.winner_score} points. The score of ${notif.args.loser_name} is ${notif.args.loser_score}`
+        notif_finalScores: function( notif )
+        {
+            console.log("Game Over");
+            var msg = `Game Over!<br>The winner is ${notif.args.winner_name} with ${notif.args.winner_score} points. The score of ${notif.args.loser_name} is ${notif.args.loser_score}`
 
-        //     if (notif.args.winner_score === notif.args.loser_score) {
-        //         msg = `Game Over!<br>The score of two players are the same. The score is ${notif.args.winner_score}.`;
-        //     }
+            if (notif.args.winner_score === notif.args.loser_score) {
+                msg = `Game Over!<br>The score of two players are the same. The score is ${notif.args.winner_score}.`;
+            }
 
-        //     if (document.getElementById("message")) document.getElementById("message").remove();
-        //     document.getElementById("message").insertAdjacentHTML(msg);
-        // }
+            if (document.getElementById("message")) document.getElementById("message").remove();
+            document.getElementById("message").insertAdjacentHTML(msg);
+        }
    });             
 });
