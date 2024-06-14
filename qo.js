@@ -8,9 +8,14 @@ function (dojo, declare, dom, html) {
         constructor: function(){
             console.log('qo constructor');
 
+            this.OppPlayer = "";
+            this.player = "";
+            this.oppColor = "";
             this.boardData = [];
+            this.emptyPositions = [];
             this.playEvtFlag = 1;
             this.beforeClickPos = 0;
+            this.stepNum = 0;
               
             // Here, you can init the global variables of your user interface
             // Example:
@@ -44,29 +49,33 @@ function (dojo, declare, dom, html) {
             const playerTwoStone = document.getElementById('lodestone-2');
             const playerTwoScore = document.getElementById('score-2');
             
-            var firstId = true;
-            var activePlayer = "";
-            var activePlayerId = "";
+            var activePlayer = gamedatas.gamestate.active_player;
+
+            for (const player in gamedatas.players) {
+                if (player != activePlayer) {
+                    this.OppPlayer = player
+                }
+            }
+
+            var thisPlayer = gamedatas.playerorder[0];
+            this.player = thisPlayer;
+
+            var activePlayerId = (gamedatas.players[activePlayer]['color'] === '000000') ? 'active-black' : 'active-white' ;
+
 
             // Setting up player boards
             for( var player_id in gamedatas.players )
             {
-                if (firstId) {
-                    activePlayer = player_id;
-                    activePlayerId = (gamedatas.players[activePlayer]['color'] === '000000') ? 'active-black' : 'active-white' ;
-                    firstId = false;
-                }
-
                 var player = gamedatas.players[player_id];
 
-                // console.log('player => ', player['id']);
-
-                if (player['color'] === '000000') {
+                if (player['color'] !== '000000') {
                     playerOneStone.insertAdjacentText('afterbegin', player['stone']);
                     playerOneScore.insertAdjacentText('afterbegin', player['score']);
+                    this.oppColor = "ffffff";
                 } else {
                     playerTwoStone.insertAdjacentText('afterbegin', player['stone']);
                     playerTwoScore.insertAdjacentText('afterbegin', player['score']);
+                    this.oppColor = "000000";
                 }
                             
                 // TODO: Setting up players boards if needed
@@ -104,12 +113,12 @@ function (dojo, declare, dom, html) {
                     
                     var className = "last-move-tile-black";
                     var idName = "move-record-black";
-                    var idActiveName = "active-white";
+                    var idActiveName = "active-black";
 
                     if (player_color === "ffffff") {
                         className = "last-move-tile-white";
                         idName = "move-record-white";
-                        idActiveName = "active-black";
+                        idActiveName = "active-white";
                     }
         
                     document.getElementById(idName).insertAdjacentHTML(
@@ -127,8 +136,10 @@ function (dojo, declare, dom, html) {
 
             if (!this.isSpectator) {
                 document.querySelectorAll('.square').forEach(square => square.addEventListener('click', e => this.onPlayDisc(e)));
-                document.querySelectorAll('#pay-btn').forEach(btn => btn.addEventListener('click', e => this.onClickPayBtn(e)));
+                document.querySelectorAll('.pay-btn').forEach(btn => btn.addEventListener('click', e => this.onClickPayBtn(e)));
             }
+
+            this.addTooltipToClass( 'pay-btn', '', _('Click to move your lodestone') );
             
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
@@ -145,13 +156,16 @@ function (dojo, declare, dom, html) {
         //
         onEnteringState: function( stateName, args )
         {
-           console.log( 'Entering state: '+stateName );
+           console.log( 'Entering state: ', stateName );
             
             switch( stateName )
             {
-            case 'playerTurn':
-                if (!this.isSpectator) this.updateEmptyPositions( args.args.emptyPositions );
-                break;
+                case 'playerTurn':
+                    if (!this.isSpectator) {
+                        this.updateEmptyPositions( args.args.emptyPositions );
+                        this.emptyPositions = args.args.emptyPositions;
+                    };
+                    break;
             }
         },
 
@@ -160,7 +174,7 @@ function (dojo, declare, dom, html) {
         //
         onLeavingState: function( stateName )
         {
-            console.log( 'Leaving state: '+stateName );
+            console.log( 'Leaving state: ', stateName );
             
             switch( stateName )
             {
@@ -249,6 +263,8 @@ function (dojo, declare, dom, html) {
                     disc.id = `disc_${x}${y}`;
                 }
             }).play();
+
+            this.stepNum = 0;
         },
 
         updateEmptyPositions: function( emptyPositions )
@@ -269,17 +285,72 @@ function (dojo, declare, dom, html) {
             this.addTooltipToClass( 'disc', '', _('Click to move this lodestone') );
         },
 
+        getPossibleMoves: function( selectedPosition )
+        {
+            console.log("get possible moves")
+            var possibleMoves = [];
+            var emptyPositions = this.emptyPositions;
+
+            console.log("#### emptyPositions => ", emptyPositions)
+
+            var x = parseInt(selectedPosition[0]);
+            var y = parseInt(selectedPosition[1]);
+            var checkPositions = [[x, y]];
+            var step = this.stepNum;
+            var loop = 1;
+
+            var directions = [
+                [-1,-1], // top-left
+                [0, -1],  // top
+                [1, -1],  // top-right
+                [-1, 0],  // left
+                [1, 0],   // right
+                [-1, 1],  // bottom-left
+                [0, 1],   // bottom
+                [1, 1]    // bottom-right
+            ];
+
+            while (loop <= step) {
+                for (const position of checkPositions) {
+                    for (const direction of directions) {
+                        var check_x = (position[0] + direction[0] > 9) ? 9 : (position[0] + direction[0] < 1) ? 1 : position[0] + direction[0] ;
+                        var check_y = (position[1] + direction[1] > 9) ? 9 : (position[1] + direction[1] < 1) ? 1 : position[1] + direction[1] ;
+
+                        var checked = possibleMoves.find(item => item[0] == check_x && item[1] == check_y);
+
+                        if (emptyPositions[check_x][check_y] && checked === undefined) {
+                            possibleMoves.push([check_x, check_y]);
+                        }
+                    }
+                }
+
+                checkPositions = [];
+
+                for (const move of possibleMoves) {
+                    checkPositions.push(move);
+                }
+
+                loop++;
+            }
+
+            document.querySelectorAll('.possibleMoves').forEach(div => div.classList.remove('possibleMoves'));
+            for (const possibleMove of possibleMoves) {
+                document.getElementById(`square_${possibleMove[0]}_${possibleMove[1]}`).classList.add('possibleMoves');
+            }
+
+
+
+        },
+
         onPlayDisc: function( evt )
         {
-            
             // Stop this event propagation
             evt.preventDefault();
             evt.stopPropagation();
 
             // Get the cliqued square x and y
             // Note: square id format is "square_X_Y"
-            var coords = evt.currentTarget.id.split('_');
-            // var stoneColor = evt.currentTarget.data-color;
+            var coords = evt.target.id.split('_');
             var x,y;
             var afterPos;
             
@@ -291,6 +362,7 @@ function (dojo, declare, dom, html) {
                     // This is not a possible move => the click does nothing
                     return ;
                 }
+                console.log("first")
 
                 if( this.checkAction( 'playDisc' ) )    // Check that this action is possible at this moment
                 {            
@@ -299,7 +371,8 @@ function (dojo, declare, dom, html) {
                         y:y,
                     }, this, function( result ) {} );
                 }
-            } else if (coords[0] !== "square") {
+            } else if (coords[0] !== "square" && this.stepNum !== 0) {
+                console.log("click")
                 var playerId = this.gamedatas.playerorder[0];
                 var playerColor = this.gamedatas.players[ playerId ].color;
                 var stoneColor = evt.currentTarget.getAttribute('data-color');
@@ -317,52 +390,19 @@ function (dojo, declare, dom, html) {
                     }
 
                     document.getElementById(`disc_${this.beforeClickPos}`).style.opacity = 0.7;
-                } else console.log("This is not your stone")
-                // } else {
-                //     console.log('second')
-                //     // Get all elements with the class name 'disc'
-                //     var elements = document.getElementsByClassName('disc');
 
-                //     // Loop through each element and set the opacity to 1
-                //     for (let i = 0; i < elements.length; i++) {
-                //         elements[i].style.opacity = 1;
-                //     }
-
-                //     this.playEvtFlag = 1;
-                // }
+                    this.getPossibleMoves(this.beforeClickPos);
+                } 
             } else {
-                afterPos = "" + coords[1] + coords[2];
+                afterPos = "" + coords[1] + coords[2] + this.stepNum;
                 var beforePos = this.beforeClickPos;
-                var possiblity = true;
 
-                if (parseInt(beforePos[0]) === parseInt(coords[1]) ) {
-                    var arr = this.boardData.filter( item => item.x == coords[1]);
-
-                    var i = (parseInt(beforePos[1]) > parseInt(coords[2])) ? parseInt(beforePos[1]) : parseInt(coords[2]);
-                    var j = (parseInt(beforePos[1]) < parseInt(coords[2])) ? parseInt(beforePos[1]) : parseInt(coords[2]);
-
-                    for (var k = j+1; k < i; k++) {
-                        for (var l = 0; l < arr.length; l++) {
-                            if (parseInt(arr[l].y) === k) possiblity = false;
-                        }
-                    }
-                    
-                } else if (parseInt(beforePos[1]) === parseInt(coords[2])) {
-                    var arr = this.boardData.filter( item => item.y == coords[2]);
-
-                    var i = (parseInt(beforePos[0]) > parseInt(coords[1])) ? parseInt(beforePos[0]) : parseInt(coords[1]);
-                    var j = (parseInt(beforePos[0]) < parseInt(coords[1])) ? parseInt(beforePos[0]) : parseInt(coords[1]);
-
-                    for (var k = j+1; k < i; k++) {
-                        for (var l = 0; l < arr.length; l++) {
-                            if (parseInt(arr[l].x) === k) possiblity = false;
-                        }
-                    }
-                } else {
-                    possiblity = false;
+                if(!document.getElementById(`square_${coords[1]}_${coords[2]}`).classList.contains('possibleMoves')) {
+                    // This is not a possible move => the click does nothing
+                    return ;
                 }
 
-                if( this.checkAction( 'playDisc' ) && possiblity )    // Check that this action is possible at this moment
+                if( this.checkAction( 'playDisc' ))    // Check that this action is possible at this moment
                 {            
                     this.ajaxcall( "/qo/qo/playDisc.html", {
                             x:beforePos,
@@ -370,6 +410,7 @@ function (dojo, declare, dom, html) {
                     }, this, function( result ) { console.log("result => ", result)} );
                 } else {
                     console.log("Impossible Move")
+                    this.stepNum = 0;
                 }
 
                 var elements = document.getElementsByClassName('disc');
@@ -390,9 +431,94 @@ function (dojo, declare, dom, html) {
             evt.preventDefault();
             evt.stopPropagation();
 
-            
+            var btnName = evt.target.id.split('-');
+            var btnColor = (btnName[2]==="black") ? "000000" : "ffffff";
+            var oppPlayer = this.OppPlayer;
+            var thisPlayer = this.player;
 
-            console.log("Hello => ", evt);
+            console.log("#### active player => ", oppPlayer);
+            console.log("#### this player => ", thisPlayer)
+            console.log("#### btn color => ", btnColor)
+            console.log("#### opp color => ", this.oppColor)
+
+            if ((btnColor == this.oppColor) && (oppPlayer != thisPlayer)) {
+                var msgContainer = document.getElementById("dark-shroud");
+                var msgTitle = document.getElementById("win-lose-draw");
+                var msgBox = document.getElementById("pay-message");
+                msgContainer.style.visibility = "visible";
+                msgContainer.style.opacity = 1;
+                msgTitle.style.opacity = 1;
+                msgBox.style.opacity = 1;
+
+                msgTitle.insertAdjacentHTML('afterbegin', 'Want to move your lodestone?<br>You must pay double numbers of lodestone.');
+
+                for (let i = 1; i <= 3; i++) {
+                    const btnElement = `<button class="msg-button" id="msg-btn-${i}">Move ${i} - ${i*2} lodestones</button>`;
+                    msgBox.insertAdjacentHTML('beforeend', btnElement);
+                }
+
+                msgBox.insertAdjacentHTML('beforeend', `<button class="msg-cancel-button" id="cancel-btn">Cancel</button>`);
+
+                document.querySelectorAll('.msg-button').forEach(btn => btn.addEventListener('click', e => this.onSetMoveNum(e)));
+                document.querySelectorAll('.msg-cancel-button').forEach(btn => btn.addEventListener('click', e => this.onCancelMove(e)));
+            }
+        },
+
+        onSetMoveNum: function ( evt ) {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            var idNum = evt.target.id.split('-');
+            this.stepNum = parseInt(idNum[2]);
+
+            var msgContainer = dojo.byId("dark-shroud");
+            var msgTitle = dojo.byId("win-lose-draw");
+            var msgBox = dojo.byId("pay-message");
+
+            dojo.style(msgContainer, {
+                visibility: "hidden",
+                opacity: 0
+            });
+
+            dojo.style(msgTitle, {
+                opacity: 0
+            });
+
+            dojo.style(msgBox, {
+                opacity: 0
+            });
+
+            dojo.empty(msgTitle);
+            dojo.empty(msgBox);
+        },
+
+        onCancelMove: function ( evt ) {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            var msgContainer = dojo.byId("dark-shroud");
+            var msgTitle = dojo.byId("win-lose-draw");
+            var msgBox = dojo.byId("pay-message");
+
+            dojo.style(msgContainer, {
+                visibility: "hidden",
+                opacity: 0
+            });
+
+            dojo.style(msgTitle, {
+                opacity: 0
+            });
+
+            dojo.style(msgBox, {
+                opacity: 0
+            });
+
+            dojo.empty(msgTitle);
+            dojo.empty(msgBox);
+
+            this.stepNum = 0;
         },
         
         ///////////////////////////////////////////////////
@@ -486,6 +612,7 @@ function (dojo, declare, dom, html) {
         
         notif_playDisc: function( notif )
         {
+            console.log('notif => ', notif)
             // Remove current possible moves (makes the board more clear)
             document.querySelectorAll('.emptyPositions').forEach(div => div.classList.remove('emptyPositions'));
         
@@ -494,6 +621,8 @@ function (dojo, declare, dom, html) {
             this.boardData = this.boardData.concat({ x: `${notif.args.x}`, y: `${notif.args.y}`, player: `${notif.args.player_id}` });
 
             var color = notif.args.colors[ notif.args.player_id ];
+            this.oppColor = (color == "000000") ? "ffffff" : "000000";
+            this.OppPlayer = notif.args.player_id;
 
             var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
 
@@ -518,6 +647,8 @@ function (dojo, declare, dom, html) {
                 `beforeend`,
                 `<div id="active-player"></div>`
             );
+            
+            document.querySelectorAll('.possibleMoves').forEach(div => div.classList.remove('possibleMoves'));
         },
 
         notif_moveDisc: function( notif )
@@ -531,6 +662,8 @@ function (dojo, declare, dom, html) {
             this.boardData = this.boardData.concat({ x: `${notif.args.x}`, y: `${notif.args.y}`, player: `${notif.args.player_id}` });
 
             var color = notif.args.colors[ notif.args.player_id ];
+            this.oppColor = (color == "000000") ? "ffffff" : "000000";
+            this.OppPlayer = notif.args.player_id;
 
             var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
 
@@ -556,13 +689,13 @@ function (dojo, declare, dom, html) {
                 `<div id="active-player"></div>`
             );
 
+            document.querySelectorAll('.possibleMoves').forEach(div => div.classList.remove('possibleMoves'));
         },
 
         notif_turnOverDiscs: function(notif) {
 
             // Make these discs blink and then remove them
             var turnedOverDiscs = notif.args.turnedOver;
-            console.log("#### turnedoverdisc => ", turnedOverDiscs);
             for (let j = 0; j < turnedOverDiscs.length; j++) {
                 for (var i in turnedOverDiscs[j]) {
                     var disc = turnedOverDiscs[j][i];
