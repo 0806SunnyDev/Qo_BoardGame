@@ -98,6 +98,12 @@ html {
     cursor: pointer;  
 }
 
+.possibleMoves {
+    background: white;
+    opacity: 0.5;
+    border-radius: 50%;
+}
+
 .last-move-display-container {
     min-width: 200px;
     margin-left: 20px;
@@ -203,22 +209,24 @@ html {
     display: flex;
 }
 
-.pay-btn-black {
+#pay-btn-black {
     border-radius: 50%;
     width: 35px;
     height: 35px;
     background-image: url(img/pay-btn-2.png);
     left: 10px;
     position: relative;
+    cursor: pointer;
 }
 
-.pay-btn-white {
+#pay-btn-white {
     border-radius: 50%;
     width: 35px;
     height: 35px;
     background-image: url(img/pay-btn-1.png);
     left: 10px;
     position: relative;
+    cursor: pointer;
 }
 
 .lodestone-black {
@@ -409,7 +417,7 @@ html {
     animation: fadein 1s forwards;
 }
 
-.dark-shroud {
+#dark-shroud {
     position: absolute;
     background-color: rgba(0, 0, 0, 0.8);
     border: 1px solid black;
@@ -421,7 +429,7 @@ html {
     opacity: 0;
 }
 
-.win-lose-draw {
+#win-lose-draw {
     position: fixed;
     left: 50%;
     top: 20%;
@@ -429,7 +437,69 @@ html {
     color: #ffca00;
     width: 100%;
     text-align: center;
-    font-size: 70px;
+    font-size: 40px;
     text-shadow: 1px 1px 1px #856900, 1px 2px 1px #856900, 1px 3px 1px #856900, 1px 4px 1px #856900, 1px 5px 1px #856900, 1px 6px 1px #856900, 1px 7px 1px #856900, 1px 8px 1px #856900, 1px 9px 1px #856900, 1px 10px 1px #856900, 1px 18px 6px rgba(16, 16, 16, 0.4), 1px 22px 10px rgba(16, 16, 16, 0.2), 1px 25px 35px rgba(16, 16, 16, 0.2), 1px 30px 60px rgba(16, 16, 16, 0.4);
     opacity: 0;
+}
+
+#pay-message {
+    border: 1px solid white;
+    width: 450px;
+    height: 300px;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 15px 25px;
+    font-size: 24px;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    background: linear-gradient(to bottom, #ff920b, #F5E49B);
+    border: none;
+    border-radius: 15px;
+    opacity: 0;
+}
+
+.msg-button {
+    margin: 10px auto;
+    text-align: center;
+    box-sizing: border-box;
+    border: 1px solid black;
+    width: 380px;
+    border-radius: 22px;
+    padding: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 19px;
+    background: linear-gradient(to bottom, black, grey);
+    position: relative;
+    height: 37px;
+    box-shadow: 2px 2px 3px black;
+    font-family: 'Indie Flower', cursive;
+    line-height: 21px;
+    letter-spacing: 3px;
+}
+
+.msg-cancel-button {
+    margin: 10px auto;
+    text-align: center;
+    box-sizing: border-box;
+    border: 1px solid black;
+    width: 380px;
+    border-radius: 22px;
+    padding: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 19px;
+    background: linear-gradient(to bottom, red, black);
+    position: relative;
+    height: 37px;
+    box-shadow: 2px 2px 3px black;
+    font-family: 'Indie Flower', cursive;
+    line-height: 21px;
+    letter-spacing: 3px;
 }
