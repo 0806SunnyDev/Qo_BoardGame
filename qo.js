@@ -8,7 +8,7 @@ function (dojo, declare, dom, html) {
         constructor: function(){
             console.log('qo constructor');
 
-            this.OppPlayer = "";
+            this.oppPlayer = "";
             this.player = "";
             this.oppColor = "";
             this.boardData = [];
@@ -16,6 +16,7 @@ function (dojo, declare, dom, html) {
             this.playEvtFlag = 1;
             this.beforeClickPos = 0;
             this.stepNum = 0;
+            this.firstRender = true;
               
             // Here, you can init the global variables of your user interface
             // Example:
@@ -53,7 +54,7 @@ function (dojo, declare, dom, html) {
 
             for (const player in gamedatas.players) {
                 if (player != activePlayer) {
-                    this.OppPlayer = player
+                    this.oppPlayer = player
                 }
             }
 
@@ -62,6 +63,8 @@ function (dojo, declare, dom, html) {
 
             var activePlayerId = (gamedatas.players[activePlayer]['color'] === '000000') ? 'active-black' : 'active-white' ;
 
+            var playerStones = [];
+            var playerColors = [];
 
             // Setting up player boards
             for( var player_id in gamedatas.players )
@@ -77,10 +80,12 @@ function (dojo, declare, dom, html) {
                     playerOneScore.insertAdjacentText('afterbegin', player['captured']);
                     this.oppColor = "000000";
                 }
-                            
+
+                playerStones[player_id] = gamedatas.players[player_id].stone;
+                playerColors[player_id] = gamedatas.players[player_id].color;
                 // TODO: Setting up players boards if needed
             }
-            
+
             // TODO: Set up your game interface here, according to "gamedatas"
             const board = document.getElementById('board');
             
@@ -133,6 +138,8 @@ function (dojo, declare, dom, html) {
                 `beforeend`,
                 `<div id="active-player"></div>`
             );
+
+            this.checkBalance(playerStones, playerColors);
 
             if (!this.isSpectator) {
                 document.querySelectorAll('.square').forEach(square => square.addEventListener('click', e => this.onPlayDisc(e)));
@@ -433,7 +440,7 @@ function (dojo, declare, dom, html) {
 
             var btnName = evt.target.id.split('-');
             var btnColor = (btnName[2]==="black") ? "000000" : "ffffff";
-            var oppPlayer = this.OppPlayer;
+            var oppPlayer = this.oppPlayer;
             var thisPlayer = this.player;
 
             console.log("#### active player => ", oppPlayer);
@@ -531,6 +538,63 @@ function (dojo, declare, dom, html) {
         
         */
 
+        checkBalance: function ( stones, colors ) {
+            var board = this.boardData;
+            var remainStoneOnBoard = [];
+            var finalScore = [];
+
+            for (const position of board) {
+                if (!remainStoneOnBoard[position.player]) remainStoneOnBoard[position.player] = 1;
+                else remainStoneOnBoard[position.player]++;
+            }
+
+            for (const player in stones) {
+                if (remainStoneOnBoard[player]) finalScore.push([player, remainStoneOnBoard[player] + parseInt(stones[player])]);
+                else finalScore.push([player, parseInt(stones[player])]);
+            }
+
+            var difference = Math.abs(finalScore[0][1] - finalScore[1][1]);
+
+            if (this.firstRender) {
+                document.getElementById("balance-slider").insertAdjacentHTML('afterbegin', '<div id="slider"></div>');
+                document.getElementById('slider').style.top = "110px";
+                document.getElementById('slider').style.left = "15px";
+                this.firstRender = false;
+            }
+
+            if (difference >= 2) {
+                var stepCount = (difference > 8) ? 4 : parseInt(difference / 2);
+                var distance = 0;
+
+                if (difference !== 0) {
+                    if (finalScore[0][1] > finalScore[1][1]) {
+                        distance = (colors[finalScore[0][0]]==="000000") ? stepCount*35 : stepCount*35*(-1);
+                    } else {
+                        distance = (colors[finalScore[1][0]]==="ffffff") ? stepCount*35 : stepCount*35;
+                    }
+                }
+
+                var slider = document.getElementById('slider');
+                var startPoint = parseInt(slider.style.top);
+                var targetPoint = 110 + distance;
+    
+                // Animate the movement of the disc
+                dojo.animateProperty({
+                    node: slider,
+                    duration: 500, // Animation duration in milliseconds
+                    properties: {
+                        left: { start: 15, end: 15 },
+                        top: { start: startPoint, end: targetPoint }
+                    },
+                    onEnd: function() {
+                        // After animation, move the disc to the new position
+                        dojo.style(slider, "top", targetPoint + "px");
+                    }
+                }).play();
+            }
+           
+        },
+
 
         ///////////////////////////////////////////////////
         //// Player's action
@@ -601,7 +665,7 @@ function (dojo, declare, dom, html) {
                 ['moveDisc', 500],
                 ['playDisc', 500],
                 ['turnOverDiscs', 1500],
-                ['newScores', 1],
+                ['newScores', 500],
             ];
     
             notifs.forEach((notif) => {
@@ -622,7 +686,7 @@ function (dojo, declare, dom, html) {
 
             var color = notif.args.colors[ notif.args.player_id ];
             this.oppColor = (color == "000000") ? "ffffff" : "000000";
-            this.OppPlayer = notif.args.player_id;
+            this.oppPlayer = notif.args.player_id;
 
             var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
 
@@ -663,7 +727,7 @@ function (dojo, declare, dom, html) {
 
             var color = notif.args.colors[ notif.args.player_id ];
             this.oppColor = (color == "000000") ? "ffffff" : "000000";
-            this.OppPlayer = notif.args.player_id;
+            this.oppPlayer = notif.args.player_id;
 
             var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
 
@@ -742,20 +806,8 @@ function (dojo, declare, dom, html) {
                 html.set(stoneElement, newStone);
             }
 
-
+            this.checkBalance(notif.args.stones, notif.args.colors);
         },
-
-        notif_finalScores: function( notif )
-        {
-            console.log("Game Over");
-            var msg = `Game Over!<br>The winner is ${notif.args.winner_name} with ${notif.args.winner_score} points. The score of ${notif.args.loser_name} is ${notif.args.loser_score}`
-
-            if (notif.args.winner_score === notif.args.loser_score) {
-                msg = `Game Over!<br>The score of two players are the same. The score is ${notif.args.winner_score}.`;
-            }
-
-            if (document.getElementById("message")) document.getElementById("message").remove();
-            document.getElementById("message").insertAdjacentHTML(msg);
-        }
+        
    });             
 });

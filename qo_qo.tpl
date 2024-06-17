@@ -46,7 +46,7 @@
                 </div>
             </div>
         </div>
-        <div class="balance-slider">
+        <div id="balance-slider">
             <div class="slider-inner-container-black"></div>
             <div class="slider-inner-container-black"></div>
             <div class="slider-inner-container-black"></div>
@@ -55,7 +55,6 @@
             <div class="slider-inner-container-white"></div>
             <div class="slider-inner-container-white"></div>
             <div class="slider-inner-container-white"></div>
-            <div class="slider"></div>
         </div>
         <div class="user-box-white">
             <div class="pay-btn-container" id="active-white">
