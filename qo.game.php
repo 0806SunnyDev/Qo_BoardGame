@@ -116,7 +116,7 @@ class Qo extends Table
     
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, player_score score, player_color color, player_stone stone FROM player ";
+        $sql = "SELECT player_id id, player_score score, player_color color, player_stone stone, player_captured captured FROM player ";
         $result['players'] = $this->getCollectionFromDb( $sql );
   
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -623,7 +623,7 @@ class Qo extends Table
                 
                 // Update scores according to the number of disc on board
                 $sql = "UPDATE player
-                        SET player_score = player_score + " . count( $turnedOverDiscs[0] );
+                        SET player_captured = player_captured + " . count( $turnedOverDiscs[0] );
                 $sql .= " WHERE player_id='$player_id'";
                 $this->DbQuery( $sql );
             }
@@ -638,7 +638,7 @@ class Qo extends Table
                 $this->incStat( 1, 'discPlayedOnCenter', $player_id );
             
             // Notify
-            $newScores = $this->getCollectionFromDb( "SELECT player_id, player_score FROM player", true );
+            $newScores = $this->getCollectionFromDb( "SELECT player_id, player_captured FROM player", true );
             $newStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
             $newColors = $this->getCollectionFromDb( "SELECT player_id, player_color FROM player", true );
             $v_posArr = ["A","B","C","D","E","F","G","H","I"];
@@ -734,38 +734,52 @@ class Qo extends Table
                                                         FROM player", true);
 
         // Check it the active player has made the perfect horizontal or vertical stone line
-        $v_flag = 1;
-        $h_flag = 1;
+        $player_v_flag = 1;
+        $player_h_flag = 1;
+        $opp_v_flag = 1;
+        $opp_h_flag = 1;
+
+        $sql = "UPDATE player SET player_score = 1 WHERE player_id='";
 
         for ($i=1; $i <= 9; $i++) { 
             for ($j=1; $j <= 9; $j++) { 
                 if($board[$i][$j] != $active_player_id) {
-                    $v_flag = 2;
+                    $player_v_flag = 2;
+                }
+                if($board[$i][$j] != $player_id) {
+                    $opp_v_flag = 2;
                 }
                 if($board[$j][$i] != $active_player_id) {
-                    $h_flag = 2;
+                    $player_h_flag = 2;
+                }
+                if($board[$j][$i] != $player_id) {
+                    $opp_h_flag = 2;
                 }
             }
-            if ($v_flag == 1 || $h_flag == 1) {
+            if ($player_v_flag == 1 || $player_h_flag == 1) {
+                $sql .= $player_id . "'";
+                $this->DbQuery($sql);
+                $this->gamestate->nextState( 'endGame' );
+                return ;
+            } elseif ($opp_v_flag == 1 || $opp_h_flag == 1) {
+                $sql .= $active_player_id . "'";
+                $this->DbQuery($sql);
                 $this->gamestate->nextState( 'endGame' );
                 return ;
             }
             else {
-                $v_flag = 1;
-                $h_flag = 1;
+                $player_v_flag = 1;
+                $player_h_flag = 1;
+                $opp_v_flag = 1;
+                $opp_h_flag = 1;
             }
         }
 
-        if( ! isset( $player_to_discs[ null ] ) )
+        if((!isset( $player_to_discs[ null ] )) || (intval($player_remain_stones[$active_player_id]) === 0))
         {
             // Index 0 has not been set => there's no more free place on the board !
             // => end of the game
-            $this->gamestate->nextState( 'endGame' );
-            return ;
-        }
-        else if( intval($player_remain_stones[$active_player_id]) === 0 )
-        {
-            // Active player has no more lodestones to play on the board
+            $this->checkEndGame();
             $this->gamestate->nextState( 'endGame' );
             return ;
         }
@@ -778,14 +792,11 @@ class Qo extends Table
     }
 
     
-    function stGameEnd()
+    function checkEndGame()
     {
+        echo("#### check end game");
         // Calculate final scores
         $winner_name = "";
-        $winner_score = 0;
-        $loser_name = "";
-        $loser_score = 0;
-        $result = [];
         $finalScores = [];
         $remainStoneOnBoard = [];
         $playerArr = [];
@@ -811,65 +822,26 @@ class Qo extends Table
         $remainStones = $this->getCollectionFromDb( "SELECT player_id, player_stone FROM player", true );
 
         foreach ($players as $player_id => $player) {
-            $finalScores[$player_id] = $remainStoneOnBoard[$player_id] . $remainStones[$player_id];
+            $finalScores[$player_id] = $remainStoneOnBoard[$player_id] + $remainStones[$player_id];
         }
 
         if (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])<8) {
             if ($finalScores[$playerArr[0]]>$finalScores[$playerArr[1]]) {
-                $result[$playerArr[0]] = 1;
-                $result[$playerArr[1]] = 0;
-                $winner_name = $players[$playerArr[0]];
-                $winner_score = $finalScores[$playerArr[0]];
-                $loser_name = $players[$playerArr[1]];
-                $loser_score = $finalScores[$playerArr[1]];
+                $winner = $playerArr[0];
             } else {
-                $result[$playerArr[0]] = 0;
-                $result[$playerArr[1]] = 1;
-                $winner_name = $players[$playerArr[1]];
-                $winner_score = $finalScores[$playerArr[1]];
-                $loser_name = $players[$playerArr[0]];
-                $loser_score = $finalScores[$playerArr[0]];
+                $winner = $playerArr[1];
             }
         } elseif (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])>=8) {
             if ($finalScores[$playerArr[0]]>$finalScores[$playerArr[1]]) {
-                $result[$playerArr[0]] = 0;
-                $result[$playerArr[1]] = 1;
-                $winner_name = $players[$playerArr[1]];
-                $winner_score = $finalScores[$playerArr[1]];
-                $loser_name = $players[$playerArr[0]];
-                $loser_score = $finalScores[$playerArr[0]];
+                $winner = $playerArr[1];
             } else {
-                $result[$playerArr[0]] = 1;
-                $result[$playerArr[1]] = 0;
-                $winner_name = $players[$playerArr[0]];
-                $winner_score = $finalScores[$playerArr[0]];
-                $loser_name = $players[$playerArr[1]];
-                $loser_score = $finalScores[$playerArr[1]];
+                $winner = $playerArr[0];
             }
-        } else {
-            $result[$playerArr[0]] = 1;
-            $result[$playerArr[1]] = 1;
-            $winner_score = $finalScores[$playerArr[0]];
-            $loser_score = $finalScores[$playerArr[0]];
         }
-        
 
         // Update the scores in the database
-        foreach ($result as $player_id => $score) {
-            $sql = "UPDATE player SET player_score = $score WHERE player_id = $player_id";
-            $this->DbQuery($sql);
-        }
-
-        // Notify all players about the final scores
-        $this->notifyAllPlayers("finalScores", clienttranslate("Game Over!"), [
-            'winner_name' => $winner_name,
-            'winner_score' => $winner_score,
-            'loser_name' => $loser_name,
-            'loser_score' => $loser_score,
-        ]);
-
-        // End the game and provide statistics if needed
-        $this->gamestate->nextState('endGame');
+        $sql = "UPDATE player SET player_score = 1 WHERE player_id = $winner";
+        $this->DbQuery($sql);
     }
 
 //////////////////////////////////////////////////////////////////////////////

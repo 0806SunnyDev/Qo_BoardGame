@@ -70,11 +70,11 @@ function (dojo, declare, dom, html) {
 
                 if (player['color'] !== '000000') {
                     playerOneStone.insertAdjacentText('afterbegin', player['stone']);
-                    playerOneScore.insertAdjacentText('afterbegin', player['score']);
+                    playerTwoScore.insertAdjacentText('afterbegin', player['captured']);
                     this.oppColor = "ffffff";
                 } else {
                     playerTwoStone.insertAdjacentText('afterbegin', player['stone']);
-                    playerTwoScore.insertAdjacentText('afterbegin', player['score']);
+                    playerOneScore.insertAdjacentText('afterbegin', player['captured']);
                     this.oppColor = "000000";
                 }
                             
@@ -393,7 +393,7 @@ function (dojo, declare, dom, html) {
 
                     this.getPossibleMoves(this.beforeClickPos);
                 } 
-            } else {
+            } else if (coords[0] === "square" && this.stepNum !== 0) {
                 afterPos = "" + coords[1] + coords[2] + this.stepNum;
                 var beforePos = this.beforeClickPos;
 
