@@ -46,9 +46,20 @@ function (dojo, declare, dom, html) {
             this.isSpectator = this.player_id === null || !(this.player_id in gamedatas.players);
 
             const playerOneStone = document.getElementById('lodestone-1');
+            const playerOneOnboard = document.getElementById('onboard-1');
+            const playerOneReady = document.getElementById('ready-1');
             const playerOneScore = document.getElementById('score-1');
             const playerTwoStone = document.getElementById('lodestone-2');
+            const playerTwoOnboard = document.getElementById('onboard-2');
+            const playerTwoReady = document.getElementById('ready-2');
             const playerTwoScore = document.getElementById('score-2');
+
+            var onboardStones = [];
+
+            for (const position of gamedatas.board) {
+                if(onboardStones[gamedatas.players[position.player].color]) onboardStones[gamedatas.players[position.player].color]++;
+                else onboardStones[gamedatas.players[position.player].color] = 1;
+            }
             
             var activePlayer = gamedatas.gamestate.active_player;
 
@@ -71,13 +82,20 @@ function (dojo, declare, dom, html) {
             {
                 var player = gamedatas.players[player_id];
 
-                if (player['color'] !== '000000') {
-                    playerOneStone.insertAdjacentText('afterbegin', player['stone']);
-                    playerTwoScore.insertAdjacentText('afterbegin', player['captured']);
+                var totalstone = onboardStones[player.color] ? onboardStones[player.color] + parseInt(player.stone) : parseInt(player.stone);
+                var onboardStone = onboardStones[player.color] ? onboardStones[player.color] : 0;
+
+                if (player.color === '000000') {
+                    playerOneStone.insertAdjacentText('afterbegin',  totalstone);
+                    playerOneOnboard.insertAdjacentText('afterbegin', onboardStone);
+                    playerOneReady.insertAdjacentText('afterbegin', player.stone);
+                    playerOneScore.insertAdjacentText('afterbegin', player.captured);
                     this.oppColor = "ffffff";
                 } else {
-                    playerTwoStone.insertAdjacentText('afterbegin', player['stone']);
-                    playerOneScore.insertAdjacentText('afterbegin', player['captured']);
+                    playerTwoStone.insertAdjacentText('afterbegin',  totalstone);
+                    playerTwoOnboard.insertAdjacentText('afterbegin', onboardStone);
+                    playerTwoReady.insertAdjacentText('afterbegin', player.stone);
+                    playerTwoScore.insertAdjacentText('afterbegin', player.captured);
                     this.oppColor = "000000";
                 }
 
@@ -298,8 +316,6 @@ function (dojo, declare, dom, html) {
             var possibleMoves = [];
             var emptyPositions = this.emptyPositions;
 
-            console.log("#### emptyPositions => ", emptyPositions)
-
             var x = parseInt(selectedPosition[0]);
             var y = parseInt(selectedPosition[1]);
             var checkPositions = [[x, y]];
@@ -369,7 +385,6 @@ function (dojo, declare, dom, html) {
                     // This is not a possible move => the click does nothing
                     return ;
                 }
-                console.log("first")
 
                 if( this.checkAction( 'playDisc' ) )    // Check that this action is possible at this moment
                 {            
@@ -379,7 +394,6 @@ function (dojo, declare, dom, html) {
                     }, this, function( result ) {} );
                 }
             } else if (coords[0] !== "square" && this.stepNum !== 0) {
-                console.log("click")
                 var playerId = this.gamedatas.playerorder[0];
                 var playerColor = this.gamedatas.players[ playerId ].color;
                 var stoneColor = evt.currentTarget.getAttribute('data-color');
@@ -442,11 +456,6 @@ function (dojo, declare, dom, html) {
             var btnColor = (btnName[2]==="black") ? "000000" : "ffffff";
             var oppPlayer = this.oppPlayer;
             var thisPlayer = this.player;
-
-            console.log("#### active player => ", oppPlayer);
-            console.log("#### this player => ", thisPlayer)
-            console.log("#### btn color => ", btnColor)
-            console.log("#### opp color => ", this.oppColor)
 
             if ((btnColor == this.oppColor) && (oppPlayer != thisPlayer)) {
                 var msgContainer = document.getElementById("dark-shroud");
@@ -676,7 +685,6 @@ function (dojo, declare, dom, html) {
         
         notif_playDisc: function( notif )
         {
-            console.log('notif => ', notif)
             // Remove current possible moves (makes the board more clear)
             document.querySelectorAll('.emptyPositions').forEach(div => div.classList.remove('emptyPositions'));
         
@@ -757,15 +765,20 @@ function (dojo, declare, dom, html) {
         },
 
         notif_turnOverDiscs: function(notif) {
-
             // Make these discs blink and then remove them
             var turnedOverDiscs = notif.args.turnedOver;
-            for (let j = 0; j < turnedOverDiscs.length; j++) {
-                for (var i in turnedOverDiscs[j]) {
-                    var disc = turnedOverDiscs[j][i];
+            var board = this.boardData;
+            console.log('turned over discs => ', this.boardData)
+
+            for (let i = 0; i < turnedOverDiscs.length; i++) {
+                for (let j = 0; j < turnedOverDiscs[i].length; j++) {
+                    var disc = turnedOverDiscs[i][j];
+                    console.log(disc)
+
+                    var remainStoneArr = board.filter( item => item.x != disc.x || item.y != disc.y);
                     
-                    this.boardData = this.boardData.filter( item => item.x != disc.x && item.y != disc.y );
-    
+                    board = remainStoneArr;
+                    
                     // Make the disc blink once and then remove it
                     var anim = dojo.fx.chain([
                         dojo.fadeOut({ node: 'disc_' + disc.x + '' + disc.y }),
@@ -782,28 +795,47 @@ function (dojo, declare, dom, html) {
                     anim.play();
                 }
             }
+
+            this.boardData = board;
+            console.log(this.boardData)
         },
 
         notif_newScores: function( notif )
         {
+            console.log('new scores => ', this.boardData)
+            var onboardStones = [];
+
+            for (const position of this.boardData) {
+                if(onboardStones[position.player]) onboardStones[position.player]++;
+                else onboardStones[position.player] = 1;
+            }
+            
             for( var player_id in notif.args.scores )
             {
                 var color = notif.args.colors[ player_id ];
+                var newOnboard = onboardStones[ player_id ] ? onboardStones[ player_id ] : 0;
+                var newReady = notif.args.stones[ player_id ];
+                var newStone = parseInt(newOnboard) ? parseInt(newOnboard) + parseInt(newReady) : parseInt(newReady);
                 var newScore = notif.args.scores[ player_id ];
-                var newStone = notif.args.stones[ player_id ];
                 this.scoreCtrl[ player_id ].toValue( newScore );
 
                 var idNumber = "1";
                 
                 if (color === "ffffff") idNumber = "2";
                 
-                var scoreId = "score-" + idNumber;
                 var stoneId = "lodestone-" + idNumber;
+                var onboardId = "onboard-" + idNumber;
+                var readyId = "ready-" + idNumber;
+                var scoreId = "score-" + idNumber;
 
-                var scoreElement = dom.byId(scoreId);
                 var stoneElement = dom.byId(stoneId);
-                html.set(scoreElement, newScore);
+                var onboardElement = dom.byId(onboardId);
+                var readyElement = dom.byId(readyId);
+                var scoreElement = dom.byId(scoreId);
                 html.set(stoneElement, newStone);
+                html.set(onboardElement, newOnboard);
+                html.set(readyElement, newReady);
+                html.set(scoreElement, newScore);
             }
 
             this.checkBalance(notif.args.stones, notif.args.colors);

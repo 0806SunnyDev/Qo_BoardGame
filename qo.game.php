@@ -524,6 +524,7 @@ class Qo extends Table
             }
 
         }
+        var_dump($turnedOverDiscs);
         return $turnedOverDiscs;
     }
     
@@ -568,6 +569,7 @@ class Qo extends Table
         $this->checkAction( 'playDisc' );  
             
         $player_id = intval($this->getActivePlayerId()); 
+        $playerArr = $this->getCollectionFromDb( "SELECT player_id, player_name FROM player", true );
         $positionArr = array(1 => 'A', 2 => 'B', 3 => 'C', 4 => 'D', 5 => 'E', 6 => 'F', 7 => 'G', 8 => 'H', 9 => 'I');
         $board = $this->getBoard();
 
@@ -599,13 +601,16 @@ class Qo extends Table
             $this->DbQuery( $sql );
         };
 
-        $lostStone = $count*2;
+        $capturedNum = 0;
+        $playerCapturedNum = 0;
 
         if (strlen($x) == 1) $sql = "UPDATE player SET player_stone = player_stone - 1 WHERE player_id='$player_id'";
-        else $sql = "UPDATE player SET player_stone = player_stone - '$lostStone' WHERE player_id='$player_id'";
+        else {
+            $sql = "UPDATE player SET player_stone = player_stone - '$count' WHERE player_id='$player_id'";
+            
+            $playerCapturedNum = $count * 2;
+        }
         $this->DbQuery( $sql );
-
-        $capturedNum = 0;
 
         if( count( $turnedOverDiscs[0] ) > 0 || count( $turnedOverDiscs[1] ) > 0 )
         {
@@ -623,13 +628,31 @@ class Qo extends Table
                 }
             }
 
-            $capturedNum = count($turnedOverDiscs[0]) / 2;
-            
-            // Update scores according to the number of disc on board
-            $sql = "UPDATE player
-                    SET player_captured = player_captured + " . $capturedNum;
-            $sql .= " WHERE player_id='$player_id'";
-            $this->DbQuery( $sql );
+            $capturedNum = count($turnedOverDiscs[0]);
+            $playerCapturedNum = $playerCapturedNum + count($turnedOverDiscs[1]);
+
+            foreach ($playerArr as $id => $name) {
+                if ($id == $player_id) {
+                    $sql = "UPDATE player
+                            SET player_captured = player_captured + " . $capturedNum;
+                    $sql .= " WHERE player_id='$id'";
+                    $this->DbQuery( $sql );
+                } else {
+                    $sql = "UPDATE player
+                            SET player_captured = player_captured + " . $playerCapturedNum;
+                    $sql .= " WHERE player_id='$id'";
+                    $this->DbQuery( $sql );
+                }
+            }
+        } else if ($playerCapturedNum > 0) {
+            foreach ($playerArr as $id => $name) {
+                if ($id != $player_id) {
+                    $sql = "UPDATE player
+                            SET player_captured = player_captured + " . $playerCapturedNum;
+                    $sql .= " WHERE player_id='$id'";
+                    $this->DbQuery( $sql );
+                }
+            }
         }
 
         // Statistics
