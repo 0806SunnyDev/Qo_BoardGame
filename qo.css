@@ -391,22 +391,64 @@ html {
     font-family: 'Indie Flower', cursive;
 }
 
+.onboard-box-black {
+    position: relative;
+    font-size: 12px;
+    top: 9px;
+    left: 40px;
+    color: white;
+}
+
+.onboard-box-white {
+    position: relative;
+    font-size: 12px;
+    top: 9px;
+    left: 40px;
+    color: black;
+}
+
+.ready-box-black {
+    position: relative;
+    font-size: 12px;
+    top: 9px;
+    left: 40px;
+    color: white;
+}
+
+.ready-box-white {
+    position: relative;
+    font-size: 12px;
+    top: 9px;
+    left: 40px;
+    color: black;
+}
+
 .score-box-black {
     position: relative;
-    top: 10px;
-    left: 50px;
+    font-size: 12px;
+    top: 9px;
+    left: 40px;
     color: white;
 }
 
 .score-box-white {
     position: relative;
-    top: 10px;
-    left: 50px;
+    font-size: 12px;
+    top: 9px;
+    left: 40px;
     color: black;
 }
 
+.onboard {
+    font-size: 13px;
+}
+
+.ready {
+    font-size: 13px;
+}
+
 .score {
-    font-size: 22px;
+    font-size: 13px;
 }
 
 #active-player {

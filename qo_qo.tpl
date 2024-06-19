@@ -36,8 +36,10 @@
             </div>
             <div class="stone-box">
                 <div class="lodestone-black" id="lodestone-1"></div>
-                <div class="score-box-black">Captured: 
-                    <div class="score" id="score-1"></div>
+                <div>
+                    <div class="onboard-box-black">On board: <span class="onboard" id="onboard-1"></span></div>
+                    <div class="ready-box-black">Ready pile: <span class="ready" id="ready-1"></span></div>
+                    <div class="score-box-black">Captured: <span class="score" id="score-1"></span></div>
                 </div>
             </div>
             <div class="last-move-slot-container">
@@ -62,8 +64,10 @@
             </div>
             <div class="stone-box">
                 <div class="lodestone-white" id="lodestone-2"></div>
-                <div class="score-box-white">Captured: 
-                    <div class="score" id="score-2"></div>
+                <div>
+                    <div class="onboard-box-white">On board: <span class="onboard" id="onboard-2"></span></div>
+                    <div class="ready-box-white">Ready pile: <span class="ready" id="ready-2"></span></div>
+                    <div class="score-box-white">Captured: <span class="score" id="score-2"></span></div>
                 </div>
             </div>
             <div class="last-move-slot-container">
