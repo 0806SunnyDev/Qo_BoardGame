@@ -768,41 +768,41 @@ function (dojo, declare, dom, html) {
             // Make these discs blink and then remove them
             var turnedOverDiscs = notif.args.turnedOver;
             var board = this.boardData;
-            console.log('turned over discs => ', this.boardData)
 
             for (let i = 0; i < turnedOverDiscs.length; i++) {
-                for (let j = 0; j < turnedOverDiscs[i].length; j++) {
-                    var disc = turnedOverDiscs[i][j];
-                    console.log(disc)
+                var itemIndex = Object.keys(turnedOverDiscs[i]);
+                var positionArr = Object.values(turnedOverDiscs[i]);
+                if (itemIndex.length>0) {
+                    positionArr.forEach(position => {
+                        var disc = position;
 
-                    var remainStoneArr = board.filter( item => item.x != disc.x || item.y != disc.y);
-                    
-                    board = remainStoneArr;
-                    
-                    // Make the disc blink once and then remove it
-                    var anim = dojo.fx.chain([
-                        dojo.fadeOut({ node: 'disc_' + disc.x + '' + disc.y }),
-                        dojo.fadeIn({ node: 'disc_' + disc.x + '' + disc.y }),
-                        dojo.fadeOut({ 
-                            node: 'disc_' + disc.x + '' + disc.y,
-                            onEnd: function(node){
-                                dojo.destroy(node); // Remove the DOM element after animation
-                            }
-                        })
-                    ]); // end of dojo.fx.chain
-            
-                    // ... and launch the animation
-                    anim.play();
+                        var remainStoneArr = board.filter( item => item.x != disc[0] || item.y != disc[1]);
+                        
+                        board = remainStoneArr;
+                        
+                        // Make the disc blink once and then remove it
+                        var anim = dojo.fx.chain([
+                            dojo.fadeOut({ node: 'disc_' + disc[0] + '' + disc[1] }),
+                            dojo.fadeIn({ node: 'disc_' + disc[0] + '' + disc[1] }),
+                            dojo.fadeOut({ 
+                                node: 'disc_' + disc[0] + '' + disc[1],
+                                onEnd: function(node){
+                                    dojo.destroy(node); // Remove the DOM element after animation
+                                }
+                            })
+                        ]); // end of dojo.fx.chain
+                
+                        // ... and launch the animation
+                        anim.play();
+                    });
                 }
             }
 
             this.boardData = board;
-            console.log(this.boardData)
         },
 
         notif_newScores: function( notif )
         {
-            console.log('new scores => ', this.boardData)
             var onboardStones = [];
 
             for (const position of this.boardData) {

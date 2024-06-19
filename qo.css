@@ -394,7 +394,6 @@ html {
 .onboard-box-black {
     position: relative;
     font-size: 12px;
-    top: 9px;
     left: 40px;
     color: white;
 }
@@ -402,7 +401,6 @@ html {
 .onboard-box-white {
     position: relative;
     font-size: 12px;
-    top: 9px;
     left: 40px;
     color: black;
 }
@@ -410,7 +408,7 @@ html {
 .ready-box-black {
     position: relative;
     font-size: 12px;
-    top: 9px;
+    top: 3px;
     left: 40px;
     color: white;
 }
@@ -418,7 +416,7 @@ html {
 .ready-box-white {
     position: relative;
     font-size: 12px;
-    top: 9px;
+    top: 3px;
     left: 40px;
     color: black;
 }
@@ -426,7 +424,7 @@ html {
 .score-box-black {
     position: relative;
     font-size: 12px;
-    top: 9px;
+    top: 4px;
     left: 40px;
     color: white;
 }
@@ -434,7 +432,7 @@ html {
 .score-box-white {
     position: relative;
     font-size: 12px;
-    top: 9px;
+    top: 4px;
     left: 40px;
     color: black;
 }
@@ -453,10 +451,9 @@ html {
 
 #active-player {
     border-radius: 50%;
-    top: 5px;
     left: 110px;
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     background-image: url(img/active.png);
     position: relative;
     animation: fadein 1s forwards;
