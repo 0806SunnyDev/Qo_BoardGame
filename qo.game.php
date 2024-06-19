@@ -164,6 +164,8 @@ class Qo extends Table
         $turnedOverDiscs = [];
         $turnedOverDiscs[0] = [];
         $turnedOverDiscs[1] = [];
+        $oppTurnedOverDiscs = [];
+        $playerTurnedOverDiscs = [];
 
         if( $board[$x][$y] === NULL ) // If there is already a disc on this place, this can't be a valid move
         {
@@ -196,9 +198,9 @@ class Qo extends Table
 
                             if (count($mayBeTurnedVerticalPlayerDisc)===$playerStoneCountLimit && $capPlayerFlagVertical)
                             {
-                                if ($j>8) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedVerticalPlayerDisc);
+                                if ($j>8) $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedVerticalPlayerDisc);
                                 elseif (($board[$j+1][$i]!==NULL)&&($board[$j+1][$i]!=$player)) {
-                                    $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedVerticalPlayerDisc);
+                                    $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedVerticalPlayerDisc);
                                 };
                             };
                         } elseif (
@@ -210,7 +212,7 @@ class Qo extends Table
                             $capPlayerFlagVertical = true;
 
                             if (count($mayBeTurnedVerticalOppDisc)===$oppStoneCountLimit && $capOppFlagVertical) {
-                                $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedVerticalOppDisc);
+                                $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedVerticalOppDisc);
                             };
 
                             $mayBeTurnedVerticalOppDisc = [];
@@ -221,10 +223,7 @@ class Qo extends Table
                         }
                     };
 
-                    if (
-                        ($board[$j][$i]!=$player)
-                        && ($board[$j][$i]!==NULL)
-                    ) {
+                    if (($board[$j][$i]!=$player)&&($board[$j][$i]!==NULL)) {
                         if ($j===1) {
                             $mayBeTurnedVerticalOppDisc = [];
                             $mayBeTurnedVerticalOppDisc[] = ['x'=>$j, 'y'=>$i];
@@ -235,7 +234,7 @@ class Qo extends Table
                             $capOppFlagVertical=true;
                             
                             if (count($mayBeTurnedVerticalPlayerDisc)===$playerStoneCountLimit && $capPlayerFlagVertical) {
-                                $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedVerticalPlayerDisc);
+                                $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedVerticalPlayerDisc);
                             };
 
                             $mayBeTurnedVerticalPlayerDisc = [];
@@ -248,13 +247,14 @@ class Qo extends Table
 
                             if (count($mayBeTurnedVerticalOppDisc)===$oppStoneCountLimit && $capOppFlagVertical)
                             {
-                                if ($j>8) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedVerticalOppDisc);
-                                elseif ($board[$j+1][$i]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedVerticalOppDisc);
+                                if ($j>8) $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedVerticalOppDisc);
+                                elseif ($board[$j+1][$i]==$player) $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedVerticalOppDisc);
                             };
                         } elseif ($board[$j-1][$i]===NULL) {
                             $capOppFlagVertical=false;
                         }
                     };
+
                     if ($board[$j][$i]===NULL) {
                         $mayBeTurnedVerticalOppDisc = [];
                         $mayBeTurnedVerticalPlayerDisc = [];
@@ -273,9 +273,9 @@ class Qo extends Table
                             $mayBeTurnedHorizonPlayerDisc[] = ['x'=>$i, 'y'=>$j];
 
                             if (count($mayBeTurnedHorizonPlayerDisc)===$playerStoneCountLimit && $capPlayerFlagHorizontal) {
-                                if ($j>8) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedHorizonPlayerDisc);
+                                if ($j>8) $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedHorizonPlayerDisc);
                                 elseif (($board[$i][$j+1] !== NULL)&&($board[$i][$j+1] != $player)) {
-                                    $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedHorizonPlayerDisc);
+                                    $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedHorizonPlayerDisc);
                                 };
                             };
                         } elseif (($board[$i][$j-1] != $player)&&($board[$i][$j-1] !== NULL)) {
@@ -284,7 +284,7 @@ class Qo extends Table
                             $capPlayerFlagHorizontal = true;
 
                             if (count($mayBeTurnedHorizonOppDisc)===$oppStoneCountLimit && $capOppFlagHorizontal) {
-                                $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedHorizonOppDisc);
+                                $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedHorizonOppDisc);
                             };
 
                             $mayBeTurnedHorizonOppDisc = [];
@@ -305,7 +305,7 @@ class Qo extends Table
                             $capOppFlagHorizontal = true;
 
                             if (count($mayBeTurnedHorizonPlayerDisc)===$playerStoneCountLimit && $capPlayerFlagHorizontal) {
-                                $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedHorizonPlayerDisc);
+                                $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedHorizonPlayerDisc);
                             };
 
                             $mayBeTurnedHorizonPlayerDisc = [];
@@ -314,8 +314,8 @@ class Qo extends Table
                             $mayBeTurnedHorizonOppDisc[] = ['x'=>$i, 'y'=>$j];
 
                             if (count($mayBeTurnedHorizonOppDisc)===$oppStoneCountLimit && $capOppFlagHorizontal) {
-                                if ($j>8) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedHorizonOppDisc);
-                                elseif ($board[$i][$j+1]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedHorizonOppDisc);
+                                if ($j>8) $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedHorizonOppDisc);
+                                elseif ($board[$i][$j+1]==$player) $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedHorizonOppDisc);
                             };
                         } elseif ($board[$i][$j-1]===NULL) {
                             $capOppFlagHorizontal=false;
@@ -372,10 +372,10 @@ class Qo extends Table
                                     $mayBeTurnedDiagonOnePlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
                                     if ((count($mayBeTurnedDiagonOnePlayerDisc)===$playerStoneCountLimit) && $capPlayerFlagDiagonOne) {
                                         if ($end_x===NULL || $end_y===NULL) {
-                                            $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                            $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedDiagonOnePlayerDisc);
                                         }
                                         elseif (($board[$end_x][$end_y] != $player)&&($board[$end_x][$end_y] !== NULL)) {
-                                            $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                            $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedDiagonOnePlayerDisc);
                                         }
                                     };
                                 } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
@@ -383,7 +383,7 @@ class Qo extends Table
                                     $mayBeTurnedDiagonOnePlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
 
                                     if ((count($mayBeTurnedDiagonOneOppDisc)===$oppStoneCountLimit) && $capOppFlagDiagonOne) {
-                                        $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                        $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedDiagonOneOppDisc);
                                     };
                                     $mayBeTurnedDiagonOneOppDisc = [];
 
@@ -405,7 +405,7 @@ class Qo extends Table
                                     $mayBeTurnedDiagonOneOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
 
                                     if ((count($mayBeTurnedDiagonOnePlayerDisc)===$playerStoneCountLimit) && $capPlayerFlagDiagonOne) {
-                                        $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonOnePlayerDisc);
+                                        $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedDiagonOnePlayerDisc);
                                     };
         
                                     $mayBeTurnedDiagonOnePlayerDisc = [];
@@ -416,10 +416,10 @@ class Qo extends Table
                                     
                                     if ((count($mayBeTurnedDiagonOneOppDisc)===$oppStoneCountLimit) && $capOppFlagDiagonOne) {
                                         if ($end_x===NULL || $end_y===NULL) {
-                                            $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                            $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedDiagonOneOppDisc);
                                         }
                                         elseif ($board[$end_x][$end_y]==$player) {
-                                            $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonOneOppDisc);
+                                            $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedDiagonOneOppDisc);
                                         }
                                     };
                                 } elseif ($board[$check_x][$check_y] === NULL) {
@@ -465,8 +465,8 @@ class Qo extends Table
                                     $mayBeTurnedDiagonTwoPlayerDisc[] = ['x'=>$current_x, 'y'=>$current_y];
                                     
                                     if (count($mayBeTurnedDiagonTwoPlayerDisc)===$playerStoneCountLimit && $capPlayerFlagDiagonTwo) {
-                                        if ($end_x===NULL || $end_y===NULL) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
-                                        elseif (($board[$end_x][$end_y] != $player)&&($board[$end_x][$end_y] !== NULL)) $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
+                                        if ($end_x===NULL || $end_y===NULL) $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedDiagonTwoPlayerDisc);
+                                        elseif (($board[$end_x][$end_y] != $player)&&($board[$end_x][$end_y] !== NULL)) $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedDiagonTwoPlayerDisc);
                                     };
                                 } elseif (($board[$check_x][$check_y] != $player)&&($board[$check_x][$check_y] !== NULL)) {
                                     $mayBeTurnedDiagonTwoPlayerDisc = [];
@@ -474,7 +474,7 @@ class Qo extends Table
                                     $capPlayerFlagDiagonTwo = true;
                                     
                                     if (count($mayBeTurnedDiagonTwoOppDisc)===$oppStoneCountLimit && $capOppFlagDiagonTwo) {
-                                        $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
+                                        $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedDiagonTwoOppDisc);
                                     };
                                     
                                     $mayBeTurnedDiagonTwoOppDisc = [];
@@ -494,7 +494,7 @@ class Qo extends Table
                                     $mayBeTurnedDiagonTwoOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
                                     
                                     if (count($mayBeTurnedDiagonTwoPlayerDisc)===$playerStoneCountLimit && $capPlayerFlagDiagonTwo) {
-                                        $turnedOverDiscs[1] = array_merge($turnedOverDiscs[1], $mayBeTurnedDiagonTwoPlayerDisc);
+                                        $playerTurnedOverDiscs = array_merge($playerTurnedOverDiscs, $mayBeTurnedDiagonTwoPlayerDisc);
                                     };
                                     
                                     $mayBeTurnedDiagonTwoPlayerDisc = [];
@@ -504,8 +504,8 @@ class Qo extends Table
                                     $mayBeTurnedDiagonTwoOppDisc[] = ['x'=>$current_x, 'y'=>$current_y];
                                     
                                     if (count($mayBeTurnedDiagonTwoOppDisc)===$oppStoneCountLimit && $capOppFlagDiagonTwo) {
-                                        if ($end_x===NULL || $end_y===NULL) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
-                                        elseif ($board[$end_x][$end_y]==$player) $turnedOverDiscs[0] = array_merge($turnedOverDiscs[0], $mayBeTurnedDiagonTwoOppDisc);
+                                        if ($end_x===NULL || $end_y===NULL) $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedDiagonTwoOppDisc);
+                                        elseif ($board[$end_x][$end_y]==$player) $oppTurnedOverDiscs = array_merge($oppTurnedOverDiscs, $mayBeTurnedDiagonTwoOppDisc);
                                     };
                                 } elseif ($board[$check_x][$check_y] === NULL) {
                                     $capOppFlagDiagonTwo = false;
@@ -524,7 +524,30 @@ class Qo extends Table
             }
 
         }
-        var_dump($turnedOverDiscs);
+        // Convert the 2D array to a 1D array
+        $flattenedArray = array_map(function($element) {
+            return implode(',', $element);
+        }, $oppTurnedOverDiscs);
+
+        // Remove duplicates
+        $uniqueArray = array_unique($flattenedArray);
+
+        // Convert the 1D array back to a 2D array
+        $turnedOverDiscs[0] = array_map(function($element) {
+            return explode(',', $element);
+        }, $uniqueArray);
+
+        // Repeat the same for the second sub-array
+        $flattenedArray = array_map(function($element) {
+            return implode(',', $element);
+        }, $playerTurnedOverDiscs);
+
+        $uniqueArray = array_unique($flattenedArray);
+
+        $turnedOverDiscs[1] = array_map(function($element) {
+            return explode(',', $element);
+        }, $uniqueArray);
+
         return $turnedOverDiscs;
     }
     
@@ -620,7 +643,7 @@ class Qo extends Table
             
                     foreach( $turnedOverDiscs[$i] as $turnedOver )
                     {
-                        $sql .= "('" . $turnedOver['x'] . "', '" . $turnedOver['y'] . "'),";
+                        $sql .= "('" . $turnedOver[0] . "', '" . $turnedOver[1] . "'),";
                     }
                     $sql = substr( $sql, 0, -1) . " )";
                             
