@@ -488,25 +488,29 @@ function (dojo, declare, dom, html) {
             var idNum = evt.target.id.split('-');
             this.stepNum = parseInt(idNum[2]);
 
-            var msgContainer = dojo.byId("dark-shroud");
             var msgTitle = dojo.byId("win-lose-draw");
             var msgBox = dojo.byId("pay-message");
 
-            dojo.style(msgContainer, {
-                visibility: "hidden",
-                opacity: 0
-            });
+            // dojo.style(msgContainer, {
+            //     visibility: "hidden",
+            //     opacity: 0
+            // });
 
-            dojo.style(msgTitle, {
-                opacity: 0
-            });
+            // dojo.style(msgTitle, {
+            //     opacity: 0
+            // });
 
-            dojo.style(msgBox, {
-                opacity: 0
-            });
+            // dojo.style(msgBox, {
+            //     transition: "opacity 0.5s ease",
+            //     opacity: 0
+            // });
 
             dojo.empty(msgTitle);
             dojo.empty(msgBox);
+
+            dojo.html.set(msgTitle, "You should select one lodestone on the board to move.");
+            dojo.html.set(msgBox,`<button class="msg-confirm-button" id="confirm-btn">OK</button>`);
+            document.querySelectorAll('.msg-confirm-button').forEach(btn => btn.addEventListener('click', e => this.onClickConfirm(e)));
         },
 
         onCancelMove: function ( evt ) {
@@ -520,14 +524,17 @@ function (dojo, declare, dom, html) {
 
             dojo.style(msgContainer, {
                 visibility: "hidden",
+                transition: "opacity 0.5s ease",
                 opacity: 0
             });
 
             dojo.style(msgTitle, {
+                transition: "opacity 0.5s ease",
                 opacity: 0
             });
 
             dojo.style(msgBox, {
+                transition: "opacity 0.5s ease",
                 opacity: 0
             });
 
@@ -535,6 +542,35 @@ function (dojo, declare, dom, html) {
             dojo.empty(msgBox);
 
             this.stepNum = 0;
+        },
+
+        onClickConfirm: function (evt) {
+            // Stop this event propagation
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            var msgContainer = dojo.byId("dark-shroud");
+            var msgTitle = dojo.byId("win-lose-draw");
+            var msgBox = dojo.byId("pay-message");
+
+            dojo.style(msgContainer, {
+                visibility: "hidden",
+                transition: "opacity 0.5s ease",
+                opacity: 0
+            });
+
+            dojo.style(msgTitle, {
+                transition: "opacity 0.5s ease",
+                opacity: 0
+            });
+
+            dojo.style(msgBox, {
+                transition: "opacity 0.5s ease",
+                opacity: 0
+            });
+
+            dojo.empty(msgTitle);
+            dojo.empty(msgBox);
         },
         
         ///////////////////////////////////////////////////
