@@ -133,21 +133,11 @@ function (dojo, declare, dom, html) {
                 for (let i = 0; i < gamedatas.record.length; i++) {
                     const player_id = gamedatas.record[i]['player']
                     var player_color = gamedatas.players[player_id]['color'];
-                    
-                    var className = "last-move-tile-black";
-                    var idName = "move-record-black";
                     var idActiveName = "active-black";
 
                     if (player_color === "ffffff") {
-                        className = "last-move-tile-white";
-                        idName = "move-record-white";
                         idActiveName = "active-white";
                     }
-        
-                    document.getElementById(idName).insertAdjacentHTML(
-                        `afterbegin`,
-                        `<div class="${className}">${gamedatas.record[i]['position']}</div>`
-                    );
                 }
             }
 
@@ -732,30 +722,16 @@ function (dojo, declare, dom, html) {
             this.oppColor = (color == "000000") ? "ffffff" : "000000";
             this.oppPlayer = notif.args.player_id;
 
-            var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
-
-            var move = position_y_arr[notif.args.y - 1] + notif.args.x;
-            var className = "last-move-tile-black";
-            var idName = "move-record-black";
             var idActiveName = "active-white";
             if (color === "ffffff") {
-                className = "last-move-tile-white";
-                idName = "move-record-white";
                 idActiveName = "active-black";
             };
-
-            document.getElementById(idName).insertAdjacentHTML(
-                `afterbegin`,
-                `<div class="${className}">${move}</div>`
-            );
-
             if(document.getElementById("active-player")) document.getElementById("active-player").remove();
-
             document.getElementById(idActiveName).insertAdjacentHTML(
                 `beforeend`,
                 `<div id="active-player"></div>`
             );
-            
+             
             document.querySelectorAll('.possibleMoves').forEach(div => div.classList.remove('possibleMoves'));
         },
 
@@ -776,19 +752,10 @@ function (dojo, declare, dom, html) {
             var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
 
             var move = position_y_arr[notif.args.y - 1] + notif.args.x;
-            var className = "last-move-tile-black";
-            var idName = "move-record-black";
             var idActiveName = "active-white";
             if (color === "ffffff") {
-                className = "last-move-tile-white";
-                idName = "move-record-white";
                 idActiveName = "active-black";
             };
-
-            document.getElementById(idName).insertAdjacentHTML(
-                `afterbegin`,
-                `<div class="${className}">${move}</div>`
-            );
 
             document.querySelector('#active-player').remove();
 
