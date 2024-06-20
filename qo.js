@@ -508,7 +508,7 @@ function (dojo, declare, dom, html) {
             dojo.empty(msgTitle);
             dojo.empty(msgBox);
 
-            dojo.html.set(msgTitle, "You should select one lodestone on the board to move.");
+            dojo.html.set(msgTitle, "Click the lodestone you'd like to move");
             dojo.html.set(msgBox,`<button class="msg-confirm-button" id="confirm-btn">OK</button>`);
             document.querySelectorAll('.msg-confirm-button').forEach(btn => btn.addEventListener('click', e => this.onClickConfirm(e)));
         },
@@ -613,9 +613,9 @@ function (dojo, declare, dom, html) {
 
                 if (difference !== 0) {
                     if (finalScore[0][1] > finalScore[1][1]) {
-                        distance = (colors[finalScore[0][0]]==="000000") ? stepCount*35 : stepCount*35*(-1);
+                        distance = (colors[finalScore[0][0]]==="000000") ? stepCount*35 : stepCount*35;
                     } else {
-                        distance = (colors[finalScore[1][0]]==="ffffff") ? stepCount*35 : stepCount*35;
+                        distance = (colors[finalScore[1][0]]==="ffffff") ? stepCount*35 : stepCount*35*(-1);
                     }
                 }
 
@@ -766,7 +766,7 @@ function (dojo, declare, dom, html) {
 
             this.moveDiscOnBoard( notif.args.beforeX, notif.args.beforeY, notif.args.x, notif.args.y, notif.args.player_id );
             
-            this.boardData = this.boardData.filter( item => item.x != notif.args.beforeX && item.y != notif.args.beforeY );
+            this.boardData = this.boardData.filter( item => item.x != notif.args.beforeX || item.y != notif.args.beforeY );
             this.boardData = this.boardData.concat({ x: `${notif.args.x}`, y: `${notif.args.y}`, player: `${notif.args.player_id}` });
 
             var color = notif.args.colors[ notif.args.player_id ];

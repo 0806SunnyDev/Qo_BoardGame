@@ -408,7 +408,7 @@ html {
 .ready-box-black {
     position: relative;
     font-size: 12px;
-    top: 3px;
+    top: 2px;
     left: 40px;
     color: white;
 }
@@ -416,7 +416,7 @@ html {
 .ready-box-white {
     position: relative;
     font-size: 12px;
-    top: 3px;
+    top: 2px;
     left: 40px;
     color: black;
 }
