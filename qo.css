@@ -105,7 +105,7 @@ html {
 }
 
 .last-move-display-container {
-    min-width: 200px;
+    min-width: 170px;
     margin-left: 20px;
     background: linear-gradient(to bottom, #9b9a9a, #9b9a9a);
     border: none;
@@ -144,7 +144,8 @@ html {
     border-radius: 7px;
     box-sizing: border-box;
     margin-bottom: 5px;
-    background: linear-gradient(#565656, black, black, black);
+    background-color: black;
+    border: 2px solid white;
     box-shadow: 2px 2px 4px black;
     position: relative;
     display: block;
@@ -160,7 +161,8 @@ html {
     border-radius: 7px;
     box-sizing: border-box;
     margin-bottom: 5px;
-    background: linear-gradient(white, white, white, #bfbab6);
+    background-color: white;
+    border: 2px solid black;
     box-shadow: 2px 2px 4px black;
     position: relative;
     display: block;
@@ -168,29 +170,20 @@ html {
 }
 
 .stone-box {
-    display: flex;
-    height: 70px;
+    height: 45px;
+    font-size: 29px;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: middle;
 }
 
 #balance-slider {
-    width: 40%;
+    width: 80px;
     height: 280px;
-    background-color: #e0d2b5;
-    margin: 0 30% 4px;
+    background-image: url('img/slider-bg.jpg');
+    margin: 0 27% 4px;
     position: relative;
     box-shadow: 5px 0px 5px;
-}
-
-.slider-inner-container-black {
-    border-top: 3px solid black;
-    height: 32px;
-    background: linear-gradient(to right, #e0d2b5, #e0d2b5, #e0d2b5, white, #e0d2b5, #e0d2b5, #e0d2b5);
-}
-
-.slider-inner-container-white {
-    border-bottom: 3px solid white;
-    height: 32px;
-    background: linear-gradient(to right, #e0d2b5, #e0d2b5, #e0d2b5, black, #e0d2b5, #e0d2b5, #e0d2b5);
 }
 
 #slider {
@@ -207,7 +200,7 @@ html {
 }
 
 .pay-btn-container {
-    height: 40px;
+    height: 35px;
     align-items: center;
     display: flex;
 }
@@ -233,89 +226,15 @@ html {
 }
 
 .lodestone-black {
-    position: relative;
-    left: 30px;
-    width: 60px;
-    height: 60px;
-    background-color: white;
-    border-radius: 50%;
-    font-size: 29px;
-    font-weight: bold;
-    color: black;
-    text-align: center;
-    align-content: center;
+    color: white;
 }
 
 .lodestone-white {
-    position: relative;
-    left: 30px;
-    width: 60px;
-    height: 60px;
-    background-color: black;
-    border-radius: 50%;
-    font-size: 29px;
-    font-weight: bold;
-    color: white;
-    text-align: center;
-    align-content: center;
+    color: black;
 }
 
 .last-move-slot-container {
-    height: 35px;
-    display: flex;
-}
-
-.last-move-label-black {
-    position: relative;
-    left: 10px;
-    top: 10px;
-    display: flex;
-    color: white;
-}
-
-.last-move-label-white {
-    position: relative;
-    left: 10px;
-    top: 10px;
-    display: flex;
-    color: black;
-}
-
-.last-move-slot-box {
-    width: 135px;
-    display: flex;
-    position: relative;
-    top: 10px;
-    left: 20px;
-    overflow: hidden;
-}
-
-.last-move-tile-white {
-    color: black;
-    min-width: 38px;
-    position: relative;
-    border: 1px solid black;
-    border-radius: 10px;
-    height: 20px;
-    text-align: center;
-    margin-left: 5px;
-}
-
-.last-move-tile-black {
-    color: white;
-    min-width: 38px;
-    position: relative;
-    border: 1px solid white;
-    border-radius: 10px;
-    height: 20px;
-    text-align: center;
-    margin-left: 5px;
-}
-
-.last-move-number {
-    padding-left: 20px;
-    font-size: 29px;
-    font-weight: bold;
+    height: 65px;
 }
 
 .score-container {
@@ -394,14 +313,14 @@ html {
 .onboard-box-black {
     position: relative;
     font-size: 12px;
-    left: 40px;
+    left: 15px;
     color: white;
 }
 
 .onboard-box-white {
     position: relative;
     font-size: 12px;
-    left: 40px;
+    left: 15px;
     color: black;
 }
 
@@ -409,7 +328,7 @@ html {
     position: relative;
     font-size: 12px;
     top: 2px;
-    left: 40px;
+    left: 15px;
     color: white;
 }
 
@@ -417,7 +336,7 @@ html {
     position: relative;
     font-size: 12px;
     top: 2px;
-    left: 40px;
+    left: 15px;
     color: black;
 }
 
@@ -425,7 +344,7 @@ html {
     position: relative;
     font-size: 12px;
     top: 4px;
-    left: 40px;
+    left: 15px;
     color: white;
 }
 
@@ -433,7 +352,7 @@ html {
     position: relative;
     font-size: 12px;
     top: 4px;
-    left: 40px;
+    left: 15px;
     color: black;
 }
 
@@ -451,7 +370,7 @@ html {
 
 #active-player {
     border-radius: 50%;
-    left: 110px;
+    left: 95px;
     width: 30px;
     height: 30px;
     background-image: url(img/active.png);

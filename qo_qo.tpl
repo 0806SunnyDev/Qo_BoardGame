@@ -34,46 +34,26 @@
             <div class="pay-btn-container" id="active-black">
                 <div class="pay-btn" id="pay-btn-black"></div>
             </div>
-            <div class="stone-box">
-                <div class="lodestone-black" id="lodestone-1"></div>
-                <div>
-                    <div class="onboard-box-black">On board: <span class="onboard" id="onboard-1"></span></div>
-                    <div class="ready-box-black">Ready pile: <span class="ready" id="ready-1"></span></div>
-                    <div class="score-box-black">Captured: <span class="score" id="score-1"></span></div>
-                </div>
+            <div class="stone-box lodestone-black" id="lodestone-1">
             </div>
             <div class="last-move-slot-container">
-                <div class="last-move-label-black">Last: </div>
-                <div class="last-move-slot-box" id="move-record-black">
-                </div>
+                <div class="onboard-box-black">On board: <span class="onboard" id="onboard-1"></span></div>
+                <div class="ready-box-black">Ready pile: <span class="ready" id="ready-1"></span></div>
+                <div class="score-box-black">Captured: <span class="score" id="score-1"></span></div>
             </div>
         </div>
         <div id="balance-slider">
-            <div class="slider-inner-container-black"></div>
-            <div class="slider-inner-container-black"></div>
-            <div class="slider-inner-container-black"></div>
-            <div class="slider-inner-container-black"></div>
-            <div class="slider-inner-container-white"></div>
-            <div class="slider-inner-container-white"></div>
-            <div class="slider-inner-container-white"></div>
-            <div class="slider-inner-container-white"></div>
         </div>
         <div class="user-box-white">
             <div class="pay-btn-container" id="active-white">
                 <div class="pay-btn" id="pay-btn-white"></div>
             </div>
-            <div class="stone-box">
-                <div class="lodestone-white" id="lodestone-2"></div>
-                <div>
-                    <div class="onboard-box-white">On board: <span class="onboard" id="onboard-2"></span></div>
-                    <div class="ready-box-white">Ready pile: <span class="ready" id="ready-2"></span></div>
-                    <div class="score-box-white">Captured: <span class="score" id="score-2"></span></div>
-                </div>
+            <div class="stone-box lodestone-white" id="lodestone-2">
             </div>
             <div class="last-move-slot-container">
-                <div class="last-move-label-white">Last: </div>
-                <div class="last-move-slot-box" id="move-record-white">
-                </div>
+                <div class="onboard-box-white">On board: <span class="onboard" id="onboard-2"></span></div>
+                <div class="ready-box-white">Ready pile: <span class="ready" id="ready-2"></span></div>
+                <div class="score-box-white">Captured: <span class="score" id="score-2"></span></div>
             </div>
         </div>
     </div> 
