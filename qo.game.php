@@ -626,10 +626,11 @@ class Qo extends Table
 
         $capturedNum = 0;
         $playerCapturedNum = 0;
+        $lodestone = $count*2;
 
         if (strlen($x) == 1) $sql = "UPDATE player SET player_stone = player_stone - 1 WHERE player_id='$player_id'";
         else {
-            $sql = "UPDATE player SET player_stone = player_stone - '$count' WHERE player_id='$player_id'";
+            $sql = "UPDATE player SET player_stone = player_stone - '$lodestone' WHERE player_id='$player_id'";
             
             $playerCapturedNum = $count * 2;
         }
@@ -657,19 +658,19 @@ class Qo extends Table
             foreach ($playerArr as $id => $name) {
                 if ($id == $player_id) {
                     $sql = "UPDATE player
-                            SET player_captured = player_captured + " . $capturedNum;
+                            SET player_captured = player_captured + " . $playerCapturedNum;
                     $sql .= " WHERE player_id='$id'";
                     $this->DbQuery( $sql );
                 } else {
                     $sql = "UPDATE player
-                            SET player_captured = player_captured + " . $playerCapturedNum;
+                            SET player_captured = player_captured + " . $capturedNum;
                     $sql .= " WHERE player_id='$id'";
                     $this->DbQuery( $sql );
                 }
             }
         } else if ($playerCapturedNum > 0) {
             foreach ($playerArr as $id => $name) {
-                if ($id != $player_id) {
+                if ($id == $player_id) {
                     $sql = "UPDATE player
                             SET player_captured = player_captured + " . $playerCapturedNum;
                     $sql .= " WHERE player_id='$id'";
