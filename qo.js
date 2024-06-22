@@ -89,13 +89,13 @@ function (dojo, declare, dom, html) {
                     playerOneStone.insertAdjacentText('afterbegin',  totalstone);
                     playerOneOnboard.insertAdjacentText('afterbegin', onboardStone);
                     playerOneReady.insertAdjacentText('afterbegin', player.stone);
-                    playerOneScore.insertAdjacentText('afterbegin', player.captured);
+                    playerTwoScore.insertAdjacentText('afterbegin', player.captured);
                     this.oppColor = "ffffff";
                 } else {
                     playerTwoStone.insertAdjacentText('afterbegin',  totalstone);
                     playerTwoOnboard.insertAdjacentText('afterbegin', onboardStone);
                     playerTwoReady.insertAdjacentText('afterbegin', player.stone);
-                    playerTwoScore.insertAdjacentText('afterbegin', player.captured);
+                    playerOneScore.insertAdjacentText('afterbegin', player.captured);
                     this.oppColor = "000000";
                 }
 
@@ -749,9 +749,6 @@ function (dojo, declare, dom, html) {
             this.oppColor = (color == "000000") ? "ffffff" : "000000";
             this.oppPlayer = notif.args.player_id;
 
-            var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
-
-            var move = position_y_arr[notif.args.y - 1] + notif.args.x;
             var idActiveName = "active-white";
             if (color === "ffffff") {
                 idActiveName = "active-black";
@@ -823,13 +820,17 @@ function (dojo, declare, dom, html) {
                 this.scoreCtrl[ player_id ].toValue( newScore );
 
                 var idNumber = "1";
+                var scoreIdNum = "2";
                 
-                if (color === "ffffff") idNumber = "2";
+                if (color === "ffffff") {
+                    idNumber = "2";
+                    scoreIdNum = "1";
+                }
                 
                 var stoneId = "lodestone-" + idNumber;
                 var onboardId = "onboard-" + idNumber;
                 var readyId = "ready-" + idNumber;
-                var scoreId = "score-" + idNumber;
+                var scoreId = "score-" + scoreIdNum;
 
                 var stoneElement = dom.byId(stoneId);
                 var onboardElement = dom.byId(onboardId);

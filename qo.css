@@ -137,7 +137,6 @@ html {
 
 .user-box-black {
     width: 100%;
-    border: none;
     border-bottom: 3px solid black;
     border-right: 2px solid black;
     height: 150px;
@@ -154,7 +153,6 @@ html {
 
 .user-box-white {
     width: 100%;
-    border: none;
     border-bottom: 3px solid black;
     border-right: 2px solid black;
     height: 150px;
@@ -162,7 +160,7 @@ html {
     box-sizing: border-box;
     margin-bottom: 5px;
     background-color: white;
-    border: 2px solid black;
+    border: 4px solid black;
     box-shadow: 2px 2px 4px black;
     position: relative;
     display: block;
@@ -320,6 +318,7 @@ html {
 .onboard-box-white {
     position: relative;
     font-size: 12px;
+    font-weight: bold;
     left: 15px;
     color: black;
 }
@@ -335,6 +334,7 @@ html {
 .ready-box-white {
     position: relative;
     font-size: 12px;
+    font-weight: bold;
     top: 2px;
     left: 15px;
     color: black;
@@ -351,6 +351,7 @@ html {
 .score-box-white {
     position: relative;
     font-size: 12px;
+    font-weight: bold;
     top: 4px;
     left: 15px;
     color: black;
