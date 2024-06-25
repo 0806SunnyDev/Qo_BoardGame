@@ -89,13 +89,13 @@ function (dojo, declare, dom, html) {
                     playerOneStone.insertAdjacentText('afterbegin',  totalstone);
                     playerOneOnboard.insertAdjacentText('afterbegin', onboardStone);
                     playerOneReady.insertAdjacentText('afterbegin', player.stone);
-                    playerOneScore.insertAdjacentText('afterbegin', player.captured);
+                    playerTwoScore.insertAdjacentText('afterbegin', player.captured);
                     this.oppColor = "ffffff";
                 } else {
                     playerTwoStone.insertAdjacentText('afterbegin',  totalstone);
                     playerTwoOnboard.insertAdjacentText('afterbegin', onboardStone);
                     playerTwoReady.insertAdjacentText('afterbegin', player.stone);
-                    playerTwoScore.insertAdjacentText('afterbegin', player.captured);
+                    playerOneScore.insertAdjacentText('afterbegin', player.captured);
                     this.oppColor = "000000";
                 }
 
@@ -251,7 +251,7 @@ function (dojo, declare, dom, html) {
             }
         },
 
-        moveDiscOnBoard: function(beforeX, beforeY, x, y, player_id) {
+        moveDiscOnBoard: function(beforeX, beforeY, x, y) {
             var disc = document.getElementById(`disc_${beforeX}${beforeY}`);
             var target = document.getElementById('discs');
             var targetSquare = document.getElementById(`square_${x}_${y}`);
@@ -384,11 +384,11 @@ function (dojo, declare, dom, html) {
                     }, this, function( result ) {} );
                 }
             } else if (coords[0] !== "square" && this.stepNum !== 0) {
-                var playerId = this.gamedatas.playerorder[0];
-                var playerColor = this.gamedatas.players[ playerId ].color;
-                var stoneColor = evt.currentTarget.getAttribute('data-color');
+                // var playerId = this.gamedatas.playerorder[0];
+                // var playerColor = this.gamedatas.players[ playerId ].color;
+                // var stoneColor = evt.currentTarget.getAttribute('data-color');
 
-                if (playerColor == stoneColor) {
+                // if (playerColor == stoneColor) {
                     this.beforeClickPos = coords[1];
                     this.playEvtFlag = 2;
 
@@ -403,7 +403,7 @@ function (dojo, declare, dom, html) {
                     document.getElementById(`disc_${this.beforeClickPos}`).style.opacity = 0.7;
 
                     this.getPossibleMoves(this.beforeClickPos);
-                } 
+                // } 
             } else if (coords[0] === "square" && this.stepNum !== 0) {
                 afterPos = "" + coords[1] + coords[2] + this.stepNum;
                 var beforePos = this.beforeClickPos;
@@ -456,10 +456,10 @@ function (dojo, declare, dom, html) {
                 msgTitle.style.opacity = 1;
                 msgBox.style.opacity = 1;
 
-                msgTitle.insertAdjacentHTML('afterbegin', 'Want to move your lodestone?<br>You must pay double numbers of lodestone.');
+                msgTitle.insertAdjacentHTML('afterbegin', 'Move *Any* Lodestone By Paying Your Opponent');
 
                 for (let i = 1; i <= 3; i++) {
-                    const btnElement = `<button class="msg-button" id="msg-btn-${i}">Move ${i} - ${i*2} lodestones</button>`;
+                    const btnElement = `<button class="msg-button" id="msg-btn-${i}">Pay ${i*2}, Move ${i} Space(s)</button>`;
                     msgBox.insertAdjacentHTML('beforeend', btnElement);
                 }
 
@@ -481,24 +481,10 @@ function (dojo, declare, dom, html) {
             var msgTitle = dojo.byId("win-lose-draw");
             var msgBox = dojo.byId("pay-message");
 
-            // dojo.style(msgContainer, {
-            //     visibility: "hidden",
-            //     opacity: 0
-            // });
-
-            // dojo.style(msgTitle, {
-            //     opacity: 0
-            // });
-
-            // dojo.style(msgBox, {
-            //     transition: "opacity 0.5s ease",
-            //     opacity: 0
-            // });
-
             dojo.empty(msgTitle);
             dojo.empty(msgBox);
 
-            dojo.html.set(msgTitle, "Click the lodestone you'd like to move");
+            dojo.html.set(msgTitle, "Click Any Lodestone and Select New Position");
             dojo.html.set(msgBox,`<button class="msg-confirm-button" id="confirm-btn">OK</button>`);
             document.querySelectorAll('.msg-confirm-button').forEach(btn => btn.addEventListener('click', e => this.onClickConfirm(e)));
         },
@@ -740,18 +726,15 @@ function (dojo, declare, dom, html) {
             // Remove current possible moves (makes the board more clear)
             document.querySelectorAll('.emptyPositions').forEach(div => div.classList.remove('emptyPositions'));
 
-            this.moveDiscOnBoard( notif.args.beforeX, notif.args.beforeY, notif.args.x, notif.args.y, notif.args.player_id );
+            this.moveDiscOnBoard( notif.args.beforeX, notif.args.beforeY, notif.args.x, notif.args.y);
             
             this.boardData = this.boardData.filter( item => item.x != notif.args.beforeX || item.y != notif.args.beforeY );
-            this.boardData = this.boardData.concat({ x: `${notif.args.x}`, y: `${notif.args.y}`, player: `${notif.args.player_id}` });
+            this.boardData = this.boardData.concat({ x: `${notif.args.x}`, y: `${notif.args.y}`, player: `${notif.args.stone_owner_id}` });
 
             var color = notif.args.colors[ notif.args.player_id ];
             this.oppColor = (color == "000000") ? "ffffff" : "000000";
             this.oppPlayer = notif.args.player_id;
 
-            var position_y_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
-
-            var move = position_y_arr[notif.args.y - 1] + notif.args.x;
             var idActiveName = "active-white";
             if (color === "ffffff") {
                 idActiveName = "active-black";
@@ -823,13 +806,17 @@ function (dojo, declare, dom, html) {
                 this.scoreCtrl[ player_id ].toValue( newScore );
 
                 var idNumber = "1";
+                var scoreIdNum = "2";
                 
-                if (color === "ffffff") idNumber = "2";
+                if (color === "ffffff") {
+                    idNumber = "2";
+                    scoreIdNum = "1";
+                }
                 
                 var stoneId = "lodestone-" + idNumber;
                 var onboardId = "onboard-" + idNumber;
                 var readyId = "ready-" + idNumber;
-                var scoreId = "score-" + idNumber;
+                var scoreId = "score-" + scoreIdNum;
 
                 var stoneElement = dom.byId(stoneId);
                 var onboardElement = dom.byId(onboardId);

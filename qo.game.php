@@ -591,7 +591,8 @@ class Qo extends Table
         // Check that this player is active and that this action is possible at this moment
         $this->checkAction( 'playDisc' );  
             
-        $player_id = intval($this->getActivePlayerId()); 
+        $player_id = intval($this->getActivePlayerId());
+        $stoneOwnerId = $player_id;
         $playerArr = $this->getCollectionFromDb( "SELECT player_id, player_name FROM player", true );
         $positionArr = array(1 => 'A', 2 => 'B', 3 => 'C', 4 => 'D', 5 => 'E', 6 => 'F', 7 => 'G', 8 => 'H', 9 => 'I');
         $board = $this->getBoard();
@@ -604,6 +605,10 @@ class Qo extends Table
             $clickY = intval(strval($y)[1]);
             $count = intval(strval($y)[2]);
 
+            $sql = "SELECT board_player FROM board WHERE board_x='$selectedX' AND board_y='$selectedY'";
+            $stoneOwner = $this->getObjectFromDB($sql);
+            $stoneOwnerId = $stoneOwner["board_player"];
+
             $sql = "UPDATE board SET board_player=NULL
                     WHERE board_x='$selectedX' AND board_y='$selectedY'";
 
@@ -615,14 +620,21 @@ class Qo extends Table
         $turnedOverDiscs = $this->getTurnedOverDiscs( $clickX, $clickY, $player_id, $board );
         
         // Let's place a disc at x,y and return all "$returned" discs to the active player
-        if(count($turnedOverDiscs[1])===0){
+        if($stoneOwnerId == $player_id && count($turnedOverDiscs[1])===0){
             $sql = "UPDATE board SET board_player='$player_id'
                         WHERE board_x='$clickX' AND board_y='$clickY'";
             $this->DbQuery( $sql );
 
             $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $player_id . "', '" . $positionArr[$clickY] . $clickX . "')";
             $this->DbQuery( $sql );
-        };
+        } elseif ($stoneOwnerId != $player_id && count($turnedOverDiscs[0])===0) {
+            $sql = "UPDATE board SET board_player='$stoneOwnerId'
+                        WHERE board_x='$clickX' AND board_y='$clickY'";
+            $this->DbQuery( $sql );
+
+            $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $stoneOwnerId . "', '" . $positionArr[$clickY] . $clickX . "')";
+            $this->DbQuery( $sql );
+        }
 
         $capturedNum = 0;
         $playerCapturedNum = 0;
@@ -656,7 +668,7 @@ class Qo extends Table
             $playerCapturedNum = $playerCapturedNum + count($turnedOverDiscs[1]);
 
             foreach ($playerArr as $id => $name) {
-                if ($id == $player_id) {
+                if ($id != $player_id) {
                     $sql = "UPDATE player
                             SET player_captured = player_captured + " . $playerCapturedNum;
                     $sql .= " WHERE player_id='$id'";
@@ -670,7 +682,7 @@ class Qo extends Table
             }
         } else if ($playerCapturedNum > 0) {
             foreach ($playerArr as $id => $name) {
-                if ($id == $player_id) {
+                if ($id != $player_id) {
                     $sql = "UPDATE player
                             SET player_captured = player_captured + " . $playerCapturedNum;
                     $sql .= " WHERE player_id='$id'";
@@ -698,11 +710,12 @@ class Qo extends Table
             $firstPos = $v_posArr[intval(strval($x)[1])-1] . intval(strval($x)[0]);
             $secondPos = "" . $v_posArr[intval($clickY)-1] . $clickX;
 
-            $msg = '${player_name} moves ' . $firstPos . ' to ' . $secondPos;
+            $msg = '${player_name} moved ' . $firstPos . ' to ' . $secondPos;
             if (count( $turnedOverDiscs[0] )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
             
             $this->notifyAllPlayers( "moveDisc", clienttranslate( $msg ), array(
                 'player_id' => $player_id,
+                'stone_owner_id' => $stoneOwnerId,
                 'player_name' => $this->getActivePlayerName(),
                 'returned_nbr' => $capturedNum,
                 'colors' => $newColors,
@@ -714,7 +727,7 @@ class Qo extends Table
         } else {
             $pos = "" . $v_posArr[intval($clickY)-1] . $clickX;
 
-            $msg = '${player_name} places a lodestone at ' . $pos;
+            $msg = '${player_name} placed a lodestone at ' . $pos;
             if (count( $turnedOverDiscs[0] )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
 
             $this->notifyAllPlayers( "playDisc", clienttranslate( $msg ), array(
@@ -779,10 +792,12 @@ class Qo extends Table
 
         // Check if both player has at least 1 discs, and if there are free squares to play
         $player_to_discs = $this->getCollectionFromDb( "SELECT board_player, COUNT( board_x )
-                                                    FROM board
-                                                    GROUP BY board_player", true );
+                                                        FROM board
+                                                        GROUP BY board_player", true );
         $player_remain_stones = $this->getCollectionFromDb( "SELECT player_id, player_stone
                                                         FROM player", true);
+        $player_captured_stones = $this->getCollectionFromDb( "SELECT player_id, player_captured
+                                                        FROM player", true );
 
         // Check it the active player has made the perfect horizontal or vertical stone line
         $player_v_flag = 1;
@@ -790,7 +805,8 @@ class Qo extends Table
         $opp_v_flag = 1;
         $opp_h_flag = 1;
 
-        $sql = "UPDATE player SET player_score = 1 WHERE player_id='";
+        $winner_sql = "UPDATE player SET player_score = player_captured + 100 WHERE player_id='";
+        $loser_sql = "UPDATE player SET player_score = player_captured WHERE player_id='";
 
         for ($i=1; $i <= 9; $i++) { 
             for ($j=1; $j <= 9; $j++) { 
@@ -808,13 +824,17 @@ class Qo extends Table
                 }
             }
             if ($player_v_flag == 1 || $player_h_flag == 1) {
-                $sql .= $player_id . "'";
-                $this->DbQuery($sql);
+                $winner_sql .= $player_id . "'";
+                $loser_sql .= $active_player_id . "'";
+                $this->DbQuery($winner_sql);
+                $this->DbQuery($loser_sql);
                 $this->gamestate->nextState( 'endGame' );
                 return ;
             } elseif ($opp_v_flag == 1 || $opp_h_flag == 1) {
-                $sql .= $active_player_id . "'";
-                $this->DbQuery($sql);
+                $winner_sql .= $active_player_id . "'";
+                $loser_sql .= $player_id . "'";
+                $this->DbQuery($winner_sql);
+                $this->DbQuery($loser_sql);
                 $this->gamestate->nextState( 'endGame' );
                 return ;
             }
@@ -830,7 +850,7 @@ class Qo extends Table
         {
             // Index 0 has not been set => there's no more free place on the board !
             // => end of the game
-            // $this->checkEndGame();
+            $this->checkEndGame();
             $this->gamestate->nextState( 'endGame' );
             return ;
         }
@@ -845,7 +865,6 @@ class Qo extends Table
     function checkEndGame()
     {
         // Calculate final scores
-        $winner_name = "";
         $finalScores = [];
         $remainStoneOnBoard = [];
         $playerArr = [];
@@ -878,14 +897,47 @@ class Qo extends Table
 
         if (intval($captured[$playerArr[0]]) != intval($captured[$playerArr[1]])) {
             if (intval($captured[$playerArr[0]]) > intval($captured[$playerArr[1]])) {
-                if (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])<8) $winner = $playerArr[0];
-                elseif (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])>=8) $winner = $playerArr[1];
+                if (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])<8) {
+                    $winner = $playerArr[0];
+                    $loser = $playerArr[1];
+                    $winner_sql = "UPDATE player SET player_score = player_captured WHERE player_id = $winner";
+                    $loser_sql = "UPDATE player SET player_score = player_captured WHERE player_id = $loser";
+                    $this->DbQuery($winner_sql);
+                    $this->DbQuery($loser_sql);
+                } elseif (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])>=8) {
+                    $winner = $playerArr[1];
+                    $loser = $playerArr[0];
+                    $winner_sql = "UPDATE player SET player_score = player_captured + 100 WHERE player_id = $winner";
+                    $loser_sql = "UPDATE player SET player_score = player_captured WHERE player_id = $loser";
+                    $this->DbQuery($winner_sql);
+                    $this->DbQuery($loser_sql);
+                }
             } elseif (intval($captured[$playerArr[0]]) < intval($captured[$playerArr[1]])) {
-                if (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])<8) $winner = $playerArr[1];
-                elseif (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])>=8) $winner = $playerArr[0];
+                if (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])<8) {
+                    $winner = $playerArr[1];
+                    $loser = $playerArr[0];
+                    $winner_sql = "UPDATE player SET player_score = player_captured WHERE player_id = $winner";
+                    $loser_sql = "UPDATE player SET player_score = player_captured WHERE player_id = $loser";
+                    $this->DbQuery($winner_sql);
+                    $this->DbQuery($loser_sql);
+                } elseif (abs($finalScores[$playerArr[0]]-$finalScores[$playerArr[1]])>=8) {
+                    $winner = $playerArr[0];
+                    $loser = $playerArr[1];
+                    $winner_sql = "UPDATE player SET player_score = player_captured + 100 WHERE player_id = $winner";
+                    $loser_sql = "UPDATE player SET player_score = player_captured WHERE player_id = $loser";
+                    $this->DbQuery($winner_sql);
+                    $this->DbQuery($loser_sql);
+                }
             }
-            $sql = "UPDATE player SET player_score = 1 WHERE player_id = $winner";
+            $winner_sql = "UPDATE player SET player_score = player_captured + 100 WHERE player_id = $winner";
+            $loser_sql = "UPDATE player SET player_score = player_captured WHERE player_id = $loser";
             // Update the scores in the database
+            $this->DbQuery($winner_sql);
+            $this->DbQuery($loser_sql);
+        } else {
+            $sql = "UPDATE player SET player_score = player_captured WHERE player_id = $playerArr[0]";
+            $this->DbQuery($sql);
+            $sql = "UPDATE player SET player_score = player_captured WHERE player_id = $playerArr[1]";
             $this->DbQuery($sql);
         }
     }
