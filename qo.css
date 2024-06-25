@@ -381,7 +381,7 @@ html {
 
 #dark-shroud {
     position: absolute;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: black;
     border: 1px solid black;
     width: 100%;
     top: 0;
@@ -395,13 +395,12 @@ html {
 #win-lose-draw {
     position: fixed;
     left: 50%;
-    top: 20%;
+    top: 25%;
     transform: translate(-50%, -50%);
-    color: #ffca00;
+    color: white;
     width: 100%;
     text-align: center;
-    font-size: 40px;
-    text-shadow: 1px 1px 1px #856900, 1px 2px 1px #856900, 1px 3px 1px #856900, 1px 4px 1px #856900, 1px 5px 1px #856900, 1px 6px 1px #856900, 1px 7px 1px #856900, 1px 8px 1px #856900, 1px 9px 1px #856900, 1px 10px 1px #856900, 1px 18px 6px rgba(16, 16, 16, 0.4), 1px 22px 10px rgba(16, 16, 16, 0.2), 1px 25px 35px rgba(16, 16, 16, 0.2), 1px 30px 60px rgba(16, 16, 16, 0.4);
+    font-size: 30px;
     opacity: 0;
 }
 
@@ -421,7 +420,6 @@ html {
     text-align: center;
     cursor: pointer;
     outline: none;
-    background: linear-gradient(to bottom, #ff920b, #F5E49B);
     border: none;
     border-radius: 15px;
     opacity: 0;
@@ -431,58 +429,52 @@ html {
     margin: 10px auto;
     text-align: center;
     box-sizing: border-box;
-    border: 1px solid black;
-    width: 380px;
-    border-radius: 22px;
+    width: 300px;
+    border-radius: 10px;
     padding: 8px;
-    color: white;
+    color: black;
     font-weight: bold;
     font-size: 19px;
-    background: linear-gradient(to bottom, black, grey);
+    background: #E0D2B5;
     position: relative;
     height: 37px;
     box-shadow: 2px 2px 3px black;
     font-family: 'Indie Flower', cursive;
     line-height: 21px;
-    letter-spacing: 3px;
 }
 
 .msg-cancel-button {
     margin: 10px auto;
     text-align: center;
     box-sizing: border-box;
-    border: 1px solid black;
-    width: 380px;
-    border-radius: 22px;
+    width: 300px;
+    border-radius: 10px;
     padding: 8px;
-    color: white;
+    color: black;
     font-weight: bold;
     font-size: 19px;
-    background: linear-gradient(to bottom, red, black);
+    background: #E0D2B5;
     position: relative;
     height: 37px;
     box-shadow: 2px 2px 3px black;
     font-family: 'Indie Flower', cursive;
     line-height: 21px;
-    letter-spacing: 3px;
 }
 
 .msg-confirm-button {
     margin: 10px auto;
     text-align: center;
     box-sizing: border-box;
-    border: 1px solid black;
-    width: 380px;
-    border-radius: 22px;
+    width: 300px;
+    border-radius: 10px;
     padding: 8px;
-    color: white;
+    color: black;
     font-weight: bold;
     font-size: 19px;
-    background: linear-gradient(to bottom, blue, black);
+    background: #E0D2B5;
     position: relative;
     height: 37px;
     box-shadow: 2px 2px 3px black;
     font-family: 'Indie Flower', cursive;
     line-height: 21px;
-    letter-spacing: 3px;
 }

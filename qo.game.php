@@ -591,7 +591,8 @@ class Qo extends Table
         // Check that this player is active and that this action is possible at this moment
         $this->checkAction( 'playDisc' );  
             
-        $player_id = intval($this->getActivePlayerId()); 
+        $player_id = intval($this->getActivePlayerId());
+        $stoneOwnerId = $player_id;
         $playerArr = $this->getCollectionFromDb( "SELECT player_id, player_name FROM player", true );
         $positionArr = array(1 => 'A', 2 => 'B', 3 => 'C', 4 => 'D', 5 => 'E', 6 => 'F', 7 => 'G', 8 => 'H', 9 => 'I');
         $board = $this->getBoard();
@@ -604,6 +605,10 @@ class Qo extends Table
             $clickY = intval(strval($y)[1]);
             $count = intval(strval($y)[2]);
 
+            $sql = "SELECT board_player FROM board WHERE board_x='$selectedX' AND board_y='$selectedY'";
+            $stoneOwner = $this->getObjectFromDB($sql);
+            $stoneOwnerId = $stoneOwner["board_player"];
+
             $sql = "UPDATE board SET board_player=NULL
                     WHERE board_x='$selectedX' AND board_y='$selectedY'";
 
@@ -615,14 +620,21 @@ class Qo extends Table
         $turnedOverDiscs = $this->getTurnedOverDiscs( $clickX, $clickY, $player_id, $board );
         
         // Let's place a disc at x,y and return all "$returned" discs to the active player
-        if(count($turnedOverDiscs[1])===0){
+        if($stoneOwnerId == $player_id && count($turnedOverDiscs[1])===0){
             $sql = "UPDATE board SET board_player='$player_id'
                         WHERE board_x='$clickX' AND board_y='$clickY'";
             $this->DbQuery( $sql );
 
             $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $player_id . "', '" . $positionArr[$clickY] . $clickX . "')";
             $this->DbQuery( $sql );
-        };
+        } elseif ($stoneOwnerId != $player_id && count($turnedOverDiscs[0])===0) {
+            $sql = "UPDATE board SET board_player='$stoneOwnerId'
+                        WHERE board_x='$clickX' AND board_y='$clickY'";
+            $this->DbQuery( $sql );
+
+            $sql = "INSERT INTO `record`(`player`, `position`) VALUES ('" . $stoneOwnerId . "', '" . $positionArr[$clickY] . $clickX . "')";
+            $this->DbQuery( $sql );
+        }
 
         $capturedNum = 0;
         $playerCapturedNum = 0;
@@ -698,11 +710,12 @@ class Qo extends Table
             $firstPos = $v_posArr[intval(strval($x)[1])-1] . intval(strval($x)[0]);
             $secondPos = "" . $v_posArr[intval($clickY)-1] . $clickX;
 
-            $msg = '${player_name} moves ' . $firstPos . ' to ' . $secondPos;
+            $msg = '${player_name} moved ' . $firstPos . ' to ' . $secondPos;
             if (count( $turnedOverDiscs[0] )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
             
             $this->notifyAllPlayers( "moveDisc", clienttranslate( $msg ), array(
                 'player_id' => $player_id,
+                'stone_owner_id' => $stoneOwnerId,
                 'player_name' => $this->getActivePlayerName(),
                 'returned_nbr' => $capturedNum,
                 'colors' => $newColors,
@@ -714,7 +727,7 @@ class Qo extends Table
         } else {
             $pos = "" . $v_posArr[intval($clickY)-1] . $clickX;
 
-            $msg = '${player_name} places a lodestone at ' . $pos;
+            $msg = '${player_name} placed a lodestone at ' . $pos;
             if (count( $turnedOverDiscs[0] )>0) $msg .= ' and captured ${returned_nbr} lodestone(s)';
 
             $this->notifyAllPlayers( "playDisc", clienttranslate( $msg ), array(
