@@ -381,6 +381,7 @@ function (dojo, declare, dom, html) {
                     this.ajaxcall( "/qo/qo/playDisc.html", {
                         x:x,
                         y:y,
+                        lock: true
                     }, this, function( result ) {} );
                 }
             } else if (coords[0] !== "square" && this.stepNum !== 0) {
@@ -418,7 +419,8 @@ function (dojo, declare, dom, html) {
                     this.ajaxcall( "/qo/qo/playDisc.html", {
                             x:beforePos,
                             y:afterPos,
-                    }, this, function( result ) { console.log("result => ", result)} );
+                            lock: true
+                    }, this, function( result ) {} );
                 } else {
                     console.log("Impossible Move")
                     this.stepNum = 0;
@@ -459,7 +461,8 @@ function (dojo, declare, dom, html) {
                 msgTitle.insertAdjacentHTML('afterbegin', 'Move *Any* Lodestone By Paying Your Opponent');
 
                 for (let i = 1; i <= 3; i++) {
-                    const btnElement = `<button class="msg-button" id="msg-btn-${i}">Pay ${i*2}, Move ${i} Space(s)</button>`;
+                    const text = (i === 1) ? `Move ${i} Space` : `Move ${i} Spaces`;
+                    const btnElement = `<button class="msg-button" id="msg-btn-${i}">Pay ${i*2}, ${text}</button>`;
                     msgBox.insertAdjacentHTML('beforeend', btnElement);
                 }
 
