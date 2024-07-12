@@ -16,16 +16,16 @@ $gameinfos = array(
 'game_name' => "Qo",         
 
 // Game publisher (use empty string if there is no publisher)
-'publisher' => null,                     
+'publisher' => "Neron Games",                     
 
 // Url of game publisher website
 'publisher_website' => null,   
 
 // Board Game Geek ID of the publisher
-'publisher_bgg_id' => null,
+'publisher_bgg_id' => 55273,
 
 // Board game geek ID of the game
-'bgg_id' => 2389,
+'bgg_id' => 404911,
 
 // Players configuration that can be played (ex: 2 to 4 players)
 'players' => array( 2 ),    
